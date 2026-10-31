@@ -14,3 +14,6 @@ __pycache__/
 
 # Armazenamento vetorial (RAG futuro)
 .chroma_db/
+
+#
+Claude outputs/
