@@ -1,7 +1,11 @@
+import math
 import py3Dmol
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
 from .utils import validar_smiles, obter_mapa_carbonos
+
+# Faixa de carga parcial (Gasteiger) usada no gradiente do Mapa Eletrostático
+LIMITE_CARGA_MEP = (-0.4, 0.4)
 
 
 def gerar_imagem_2d(
@@ -101,15 +105,35 @@ def gerar_html_3d(
 
     AllChem.MMFFOptimizeMolecule(mol_3d)
 
+    # Cargas parciais de Gasteiger (usadas pelo Mapa Eletrostático).
+    # Ficam em "_GasteigerCharge" no RDKit e NÃO são escritas no MolBlock,
+    # por isso são enviadas ao viewer abaixo via mapAtomProperties.
+    cargas_parciais = None
     try:
         AllChem.ComputeGasteigerCharges(mol_3d)
+        cargas_parciais = []
+        for atomo in mol_3d.GetAtoms():
+            carga = atomo.GetDoubleProp("_GasteigerCharge")
+            cargas_parciais.append(carga if math.isfinite(carga) else 0.0)
     except Exception:
-        pass
+        cargas_parciais = None
 
     mol_block = Chem.MolToMolBlock(mol_3d)
 
     view = py3Dmol.view(width=520, height=420)
     view.addModel(mol_block, "sdf")
+
+    usar_mep = (
+        superficie != "Nenhuma"
+        and coloracao_superficie == "Mapa Eletrostático (MEP)"
+        and cargas_parciais is not None
+    )
+    if usar_mep:
+        # O índice do átomo no 3Dmol segue a ordem do MolBlock, que é a mesma do RDKit.
+        view.mapAtomProperties([
+            {"index": idx, "props": {"partialCharge": round(carga, 4)}}
+            for idx, carga in enumerate(cargas_parciais)
+        ])
 
     bg_color = "#1e1e1e" if fundo_escuro else "white"
     view.setBackgroundColor(bg_color)
@@ -169,8 +193,17 @@ def gerar_html_3d(
         if superficie == "Superfície Acessível ao Solvente (SAS)":
             surf_type = py3Dmol.SAS
 
-        if coloracao_superficie == "Mapa Eletrostático (MEP)":
-            surf_spec = {"opacity": opacidade_superficie, "colorscheme": "electrostatic"}
+        if usar_mep:
+            # Gradiente vermelho-branco-azul: vermelho = carga parcial negativa, azul = positiva
+            surf_spec = {
+                "opacity": opacidade_superficie,
+                "colorscheme": {
+                    "prop": "partialCharge",
+                    "gradient": "rwb",
+                    "min": LIMITE_CARGA_MEP[0],
+                    "max": LIMITE_CARGA_MEP[1]
+                }
+            }
         else:
             surf_spec = {"opacity": opacidade_superficie, "color": "lightblue"}
 
