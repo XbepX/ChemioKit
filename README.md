@@ -1,11 +1,11 @@
-# 🧪 ChemioChat - Laboratório de Testes & Quimioinformática
+# 🧪 ChemioKit - Toolkit de Quimioinformática
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)
+![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.30%2B-FF4B4B?style=for-the-badge&logo=streamlit)
 ![RDKit](https://img.shields.io/badge/RDKit-Cheminformatics-green?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
-O **ChemioChat** é uma plataforma web interativa para renderização, análise estrutural, estereoquímica e cálculo de propriedades físico-químicas de moléculas. Desenvolvido para servir como laboratório de testes e ambiente base para integrações de inteligência artificial aplicadas à química.
+O **ChemioKit** é um toolkit de quimioinformática em Python, com interface web em Streamlit, para renderização, análise estrutural, estereoquímica e cálculo de propriedades físico-químicas de moléculas orgânicas. Toda a representação e todo o cálculo são delegados ao RDKit e ao py3Dmol, e as funções do motor químico foram organizadas para servir de ferramentas a um futuro agente conversacional de química, o **ChemioChat**.
 
 ---
 
@@ -18,7 +18,7 @@ O **ChemioChat** é uma plataforma web interativa para renderização, análise 
   * Personalização de espessura de traço, tamanho de fonte e fundo escuro.
 * **Motor 3D (py3Dmol):**
   * Estilos de renderização: *Ball & Stick*, *Wireframe*, *Stick* e *CPK*.
-  * Superfícies eletrônicas: *Van der Waals (VDW)*, *Superfície Acessível ao Solvente (SAS)* e *Mapa Eletrostático (MEP)*.
+  * Superfícies eletrônicas: *Van der Waals (VDW)*, *Superfície Acessível ao Solvente (SAS)* e *coloração por cargas parciais de Gasteiger*.
   * Giro automático (*Auto-Spin*) e destaque espacial de centros quirais em malhas tridimensionais.
 
 ### 🧪 Mapeamento Dinâmico de Grupos Funcionais
@@ -42,7 +42,7 @@ O **ChemioChat** é uma plataforma web interativa para renderização, análise 
 O projeto adota o princípio de **Separação de Responsabilidades (*Separation of Concerns*)**, mantendo o motor químico isolado da camada visual:
 
 ```text
-ChemioChat/
+ChemioKit/
 ├── app.py                 # Orquestrador principal (Streamlit)
 ├── chemio_tools/          # Motor Químico (Lógica de negócio e RDKit)
 │   ├── io_handlers.py     # Leitura e conversão de formatos (.mol, .sdf, .pdb)
@@ -58,3 +58,29 @@ ChemioChat/
 ├── testes/                # Testes unitários do motor químico
 ├── pyproject.toml         # Configuração de dependências
 └── README.md
+```
+
+---
+
+## ⚙️ Instalação e uso
+
+Requer Python 3.12 e o gerenciador [uv](https://docs.astral.sh/uv/).
+
+```bash
+git clone https://github.com/XbepX/ChemioKit.git
+cd ChemioKit
+uv sync
+uv run streamlit run app.py
+```
+
+---
+
+## 🧭 Próximas etapas: ChemioChat
+
+O ChemioKit é a camada de ferramentas de um projeto maior: o **ChemioChat**, um agente conversacional de química que acionará as funções do motor químico por *tool calling*. Nessa arquitetura, o modelo de linguagem interpreta o pedido do estudante e escolhe a função adequada, enquanto toda a representação e o cálculo continuam sendo feitos de forma determinística pelo RDKit e pelo py3Dmol.
+
+---
+
+## 📄 Licença
+
+Distribuído sob a licença MIT. Veja o arquivo [LICENSE](LICENSE).
