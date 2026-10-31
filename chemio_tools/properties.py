@@ -9,9 +9,9 @@ GRUPOS_SMARTS = {
     "Cetona": "[#6][CX3](=O)[#6]",
     "Fenol": "[OX2H1][c]",
     "Álcool": "[OX2H1][CX4]",
-    "Amina": "[NX3;!$(NC=O)]",
+    "Amina": "[NX3;!$(NC=O);!$(N=O)]",  # exclui N de amida e de nitro/nitroso
     "Éster": "[CX3](=O)[OX2H0][#6]",
-    "Éter": "[OD2]([#6])[#6]",
+    "Éter": "[OD2;!$(O[#6]=[#8])]([#6])[#6]",  # exclui O ligado a carbonila (éster, anidrido)
     "Amida": "[CX3](=O)[NX3]"
 }
 
