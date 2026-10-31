@@ -5,7 +5,8 @@ from chemio_tools import (
     gerar_html_3d,
     identificar_grupos_funcionais,
     identificar_centros_quirais,
-    gerar_estereoisomeros
+    gerar_estereoisomeros,
+    contar_elementos_estereogenicos
 )
 
 
@@ -84,9 +85,15 @@ def renderizar_aba_visualizacao(smiles_input: str):
                     "Superfície Eletrônica",
                     ["Nenhuma", "Van der Waals (VDW)", "Superfície Acessível ao Solvente (SAS)"]
                 )
+                # Rótulo exibido -> valor interno esperado por gerar_html_3d (a lógica não muda)
+                rotulos_coloracao = {
+                    "Mapa Eletrostático (MEP)": "Cargas Parciais (Gasteiger)",
+                    "Monocromático (Azul Claro)": "Monocromático (Azul Claro)"
+                }
                 opt_coloracao = st.selectbox(
                     "Coloração da Superfície",
-                    ["Mapa Eletrostático (MEP)", "Monocromático (Azul Claro)"]
+                    list(rotulos_coloracao),
+                    format_func=rotulos_coloracao.get
                 )
                 opt_opacidade = st.slider("Opacidade da superfície", 0.1, 1.0, 0.5, step=0.1)
                 opt_auto_spin = st.checkbox("Giro automático (Spin)", value=False)
@@ -147,7 +154,14 @@ def renderizar_aba_visualizacao(smiles_input: str):
             st.subheader("Análise de Centros Quirais & Atividade Óptica")
 
             if dados_quirais and dados_quirais["tem_centros"]:
-                status_optico = "✨ Opticamente Ativa" if dados_quirais["opticamente_ativo"] else "⚪ Inativa / Indefinida"
+                icones_status = {
+                    "Opticamente Ativa": "✨",
+                    "Inativa (composto meso)": "⚪",
+                    "Inativa": "⚪",
+                    "Indefinida": "❔"
+                }
+                atividade = dados_quirais["atividade_optica"]
+                status_optico = f"{icones_status.get(atividade, '')} {atividade}".strip()
                 st.markdown(f"**Status da Molécula:** `{status_optico}`")
                 st.write(f"Encontrado(s) **{dados_quirais['total_centros']}** carbono(s) quiral(is):")
 
@@ -161,12 +175,31 @@ def renderizar_aba_visualizacao(smiles_input: str):
 
         if st.session_state.exibir_isomeros:
             st.markdown("---")
-            st.subheader("Galeria de Estereoisômeros Possíveis ($2^n$)")
+            st.subheader("Galeria de Estereoisômeros Possíveis")
 
             with st.spinner("Enumerando estereoisômeros com o RDKit..."):
                 isomeros_smiles = gerar_estereoisomeros(smiles_input)
 
-            st.success(f"Total de combinações geradas ($2^n$): **{len(isomeros_smiles)}**")
+            st.success(f"Estereoisômeros únicos encontrados: **{len(isomeros_smiles)}**")
+
+            # Compara o máximo teórico (2^n) com o número de estereoisômeros únicos encontrados
+            n_estereo = contar_elementos_estereogenicos(smiles_input)
+            maximo_teorico = 2 ** n_estereo
+            total_encontrado = len(isomeros_smiles)
+
+            if n_estereo == 0:
+                st.info("A molécula não possui elementos estereogênicos.")
+            elif total_encontrado < maximo_teorico:
+                st.info(
+                    f"O máximo teórico é $2^n$ = {maximo_teorico} (n = {n_estereo} elementos estereogênicos). "
+                    f"Foram encontrados {total_encontrado} estereoisômeros únicos porque algumas combinações "
+                    f"descrevem a mesma molécula, como ocorre em compostos meso."
+                )
+            else:
+                st.info(
+                    f"O máximo teórico é $2^n$ = {maximo_teorico} (n = {n_estereo}), "
+                    f"e todas as combinações correspondem a estereoisômeros distintos."
+                )
 
             cols_por_linha = 4
             for i in range(0, len(isomeros_smiles), cols_por_linha):
