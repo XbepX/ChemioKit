@@ -8,8 +8,8 @@ from ui import (
 )
 
 # Configuração da página
-st.set_page_config(page_title="ChemioChat", layout="wide")
-st.title("🧪 ChemioChat - Laboratório de Testes")
+st.set_page_config(page_title="ChemioKit", layout="wide")
+st.title("🧪 ChemioKit - Laboratório de Testes")
 
 # 1. Seção Superior (Entrada de SMILES, Histórico e Upload)
 smiles_input = renderizar_secao_entradas()
