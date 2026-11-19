@@ -2,6 +2,10 @@ from rdkit import Chem
 from rdkit.Chem.EnumerateStereoisomers import EnumerateStereoisomers, StereoEnumerationOptions, GetStereoisomerCount
 from .utils import validar_smiles, obter_mapa_carbonos
 
+# Número máximo de estereoisômeros enumerados (mesmo valor padrão do RDKit em StereoEnumerationOptions).
+# Acima de 10 elementos estereogênicos (2^n > 1024), a enumeração para nesse limite.
+LIMITE_ESTEREOISOMEROS = 1024
+
 
 def _gerar_imagem_especular(mol: Chem.Mol) -> Chem.Mol:
     """Retorna uma cópia da molécula com todas as tags quirais tetraédricas invertidas (enantiômero)."""
@@ -71,7 +75,7 @@ def gerar_estereoisomeros(smiles: str) -> list[str]:
         return []
 
     mol = Chem.MolFromSmiles(smiles.strip())
-    opts = StereoEnumerationOptions(onlyUnassigned=False, unique=True)
+    opts = StereoEnumerationOptions(onlyUnassigned=False, unique=True, maxIsomers=LIMITE_ESTEREOISOMEROS)
     isomeros = list(EnumerateStereoisomers(mol, options=opts))
 
     return [Chem.MolToSmiles(iso, isomericSmiles=True) for iso in isomeros]
@@ -88,5 +92,5 @@ def contar_elementos_estereogenicos(smiles: str) -> int:
 
     mol = Chem.MolFromSmiles(smiles.strip())
     # Mesmas opções de gerar_estereoisomeros; GetStereoisomerCount devolve 2^n
-    opts = StereoEnumerationOptions(onlyUnassigned=False, unique=True)
+    opts = StereoEnumerationOptions(onlyUnassigned=False, unique=True, maxIsomers=LIMITE_ESTEREOISOMEROS)
     return GetStereoisomerCount(mol, options=opts).bit_length() - 1

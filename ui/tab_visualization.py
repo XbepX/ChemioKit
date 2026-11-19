@@ -6,7 +6,8 @@ from chemio_tools import (
     identificar_grupos_funcionais,
     identificar_centros_quirais,
     gerar_estereoisomeros,
-    contar_elementos_estereogenicos
+    contar_elementos_estereogenicos,
+    LIMITE_ESTEREOISOMEROS
 )
 
 
@@ -189,6 +190,14 @@ def renderizar_aba_visualizacao(smiles_input: str):
 
             if n_estereo == 0:
                 st.info("A molécula não possui elementos estereogênicos.")
+            elif maximo_teorico > LIMITE_ESTEREOISOMEROS:
+                # Acima do limite, o RDKit enumera só parte das combinações:
+                # a diferença não pode ser atribuída a compostos meso.
+                st.warning(
+                    f"O máximo teórico é $2^n$ = {maximo_teorico} (n = {n_estereo} elementos estereogênicos). "
+                    f"A enumeração foi limitada a {LIMITE_ESTEREOISOMEROS} combinações (limite padrão do RDKit), "
+                    f"por isso a galeria pode não mostrar todos os estereoisômeros."
+                )
             elif total_encontrado < maximo_teorico:
                 st.info(
                     f"O máximo teórico é $2^n$ = {maximo_teorico} (n = {n_estereo} elementos estereogênicos). "
