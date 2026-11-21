@@ -1,0 +1,6 @@
+"CID","MolecularFormula","MolecularWeight","TPSA","XLogP","IUPACName","SMILES","DefinedAtomStereoCount","UndefinedAtomStereoCount"
+5816,"C9H13NO3",183.20,72.7,-1.400,"4-[(1R)-1-hydroxy-2-(methylamino)ethyl]benzene-1,2-diol","CNC[C@@H](C1=CC(=C(C=C1)O)O)O",1,0
+444305,"C4H6O6",150.09,115.0,-1.9,"(2R,3R)-2,3-dihydroxybutanedioic acid","[C@@H]([C@H](C(=O)O)O)(C(=O)O)O",2,0
+447315,"C4H6O6",150.09,115.0,-1.9,"(2R,3S)-2,3-dihydroxybutanedioic acid","[C@@H]([C@@H](C(=O)O)O)(C(=O)O)O",2,0
+875,"C4H6O6",150.09,115.0,-1.9,"2,3-dihydroxybutanedioic acid","C(C(C(=O)O)O)(C(=O)O)O",0,2
+16628,"C8H16",112.21,0.0,3.8,"cis-(1S,2R)-1,2-dimethylcyclohexane","C[C@@H]1CCCC[C@@H]1C",2,0
