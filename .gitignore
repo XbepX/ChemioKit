@@ -21,3 +21,5 @@ Claude outputs/
 #
 arquitetura_projeto_chemiochat.md
 resumo_tecnico_chemiokit.md
+# Cache local das consultas ao PubChem (chemio_tools/cache_nomes.py)
+dados/

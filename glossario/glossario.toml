@@ -1,0 +1,604 @@
+# Glossário de nomes do ChemioKit (copiado do ChemioChat_app em 2026-11-21)
+#
+# Liga os nomes que estudantes e professores usam (oficiais, comuns, comerciais e
+# informais) a uma estrutura (SMILES). É consultado ANTES do PubChem.
+# Veja glossario/LEIAME.md para saber como acrescentar entradas.
+#
+# Campos de [[substancia]]:
+#   id          identificador único, sem acento nem espaço
+#   nome        nome exibido ao estudante
+#   smiles      estrutura (conferida pelo RDKit quando o app abre)
+#   iupac       nomes sistemáticos (IUPAC) em português
+#   comuns      nomes usuais ou tradicionais
+#   comerciais  marcas e nomes comerciais
+#   informais   nomes populares ou do dia a dia
+#   ingles      nomes em inglês (também usados na busca)
+#   nota        observação mostrada ao usuário (opcional)
+#
+# Campos de [[mistura]]: id, nome, os mesmos campos de nomes, nota e
+#   componentes  lista de ids de substâncias
+#   principal    id do componente mais relevante (opcional)
+#
+# Um mesmo nome pode aparecer em mais de uma entrada de propósito (ex.: "ácido
+# tartárico"). Nesse caso o ChemioKit mostra as opções e pergunta qual é.
+
+# ------------------------------------------------------------------ hidrocarbonetos
+
+[[substancia]]
+id = "metano"
+nome = "Metano"
+smiles = "C"
+iupac = ["metano"]
+informais = ["gás do pântano"]
+ingles = ["methane"]
+nota = "Principal componente do gás natural e do biogás."
+
+[[substancia]]
+id = "propano"
+nome = "Propano"
+smiles = "CCC"
+iupac = ["propano"]
+ingles = ["propane"]
+
+[[substancia]]
+id = "butano"
+nome = "Butano"
+smiles = "CCCC"
+iupac = ["butano"]
+comuns = ["n-butano"]
+ingles = ["butane", "n-butane"]
+
+[[substancia]]
+id = "eteno"
+nome = "Eteno"
+smiles = "C=C"
+iupac = ["eteno"]
+comuns = ["etileno"]
+ingles = ["ethene", "ethylene"]
+
+[[substancia]]
+id = "etino"
+nome = "Etino"
+smiles = "C#C"
+iupac = ["etino"]
+comuns = ["acetileno"]
+ingles = ["ethyne", "acetylene"]
+
+[[substancia]]
+id = "benzeno"
+nome = "Benzeno"
+smiles = "c1ccccc1"
+iupac = ["benzeno"]
+ingles = ["benzene"]
+
+[[substancia]]
+id = "tolueno"
+nome = "Tolueno"
+smiles = "Cc1ccccc1"
+iupac = ["metilbenzeno"]
+comuns = ["tolueno"]
+ingles = ["toluene", "methylbenzene"]
+
+[[substancia]]
+id = "naftaleno"
+nome = "Naftaleno"
+smiles = "c1ccc2ccccc2c1"
+iupac = ["naftaleno"]
+informais = ["naftalina"]
+ingles = ["naphthalene"]
+nota = "A naftalina vendida hoje pode ser feita de outra substância (p-diclorobenzeno); confira o rótulo."
+
+# ------------------------------------------------------------------ álcoois e fenóis
+
+[[substancia]]
+id = "metanol"
+nome = "Metanol"
+smiles = "CO"
+iupac = ["metanol"]
+comuns = ["álcool metílico"]
+informais = ["álcool de madeira"]
+ingles = ["methanol", "methyl alcohol"]
+
+[[substancia]]
+id = "etanol"
+nome = "Etanol"
+smiles = "CCO"
+iupac = ["etanol"]
+comuns = ["álcool etílico", "álcool comum"]
+ingles = ["ethanol", "ethyl alcohol"]
+nota = "O álcool vendido em supermercado é uma solução de etanol em água."
+
+[[substancia]]
+id = "propan_2_ol"
+nome = "Propan-2-ol"
+smiles = "CC(C)O"
+iupac = ["propan-2-ol", "2-propanol"]
+comuns = ["álcool isopropílico", "isopropanol"]
+ingles = ["isopropanol", "isopropyl alcohol", "propan-2-ol"]
+
+[[substancia]]
+id = "glicerol"
+nome = "Glicerol"
+smiles = "OCC(O)CO"
+iupac = ["propano-1,2,3-triol"]
+comuns = ["glicerol", "glicerina"]
+ingles = ["glycerol", "glycerin"]
+
+[[substancia]]
+id = "etilenoglicol"
+nome = "Etano-1,2-diol"
+smiles = "OCCO"
+iupac = ["etano-1,2-diol"]
+comuns = ["etilenoglicol"]
+ingles = ["ethylene glycol", "ethane-1,2-diol"]
+
+[[substancia]]
+id = "fenol"
+nome = "Fenol"
+smiles = "Oc1ccccc1"
+iupac = ["fenol", "hidroxibenzeno"]
+comuns = ["ácido fênico"]
+ingles = ["phenol"]
+
+# ------------------------------------------------------------------ aldeídos e cetonas
+
+[[substancia]]
+id = "metanal"
+nome = "Metanal"
+smiles = "C=O"
+iupac = ["metanal"]
+comuns = ["formaldeído", "aldeído fórmico"]
+ingles = ["formaldehyde", "methanal"]
+
+[[substancia]]
+id = "etanal"
+nome = "Etanal"
+smiles = "CC=O"
+iupac = ["etanal"]
+comuns = ["acetaldeído", "aldeído acético"]
+ingles = ["acetaldehyde", "ethanal"]
+
+[[substancia]]
+id = "propanona"
+nome = "Propanona"
+smiles = "CC(C)=O"
+iupac = ["propanona", "propan-2-ona"]
+comuns = ["acetona", "dimetilcetona"]
+ingles = ["acetone", "propanone"]
+nota = "Alguns removedores de esmalte vendidos como \"sem acetona\" usam acetato de etila."
+
+[[substancia]]
+id = "vanilina"
+nome = "Vanilina"
+smiles = "COc1cc(C=O)ccc1O"
+iupac = ["4-hidroxi-3-metoxibenzaldeído"]
+comuns = ["vanilina"]
+ingles = ["vanillin"]
+nota = "Principal responsável pelo aroma de baunilha."
+
+# ------------------------------------------------------------------ ácidos carboxílicos
+
+[[substancia]]
+id = "acido_metanoico"
+nome = "Ácido metanoico"
+smiles = "OC=O"
+iupac = ["ácido metanoico"]
+comuns = ["ácido fórmico"]
+ingles = ["formic acid", "methanoic acid"]
+
+[[substancia]]
+id = "acido_etanoico"
+nome = "Ácido etanoico"
+smiles = "CC(=O)O"
+iupac = ["ácido etanoico"]
+comuns = ["ácido acético"]
+ingles = ["acetic acid", "ethanoic acid"]
+
+[[substancia]]
+id = "acido_latico"
+nome = "Ácido lático"
+smiles = "CC(O)C(=O)O"
+iupac = ["ácido 2-hidroxipropanoico"]
+comuns = ["ácido lático", "ácido láctico"]
+ingles = ["lactic acid", "2-hydroxypropanoic acid"]
+nota = "Sem estereoquímica definida: representa a mistura dos enantiômeros (D e L)."
+
+[[substancia]]
+id = "acido_citrico"
+nome = "Ácido cítrico"
+smiles = "OC(=O)CC(O)(CC(=O)O)C(=O)O"
+iupac = ["ácido 2-hidroxipropano-1,2,3-tricarboxílico"]
+comuns = ["ácido cítrico"]
+ingles = ["citric acid"]
+
+[[substancia]]
+id = "acido_benzoico"
+nome = "Ácido benzoico"
+smiles = "OC(=O)c1ccccc1"
+iupac = ["ácido benzoico", "ácido benzenocarboxílico"]
+ingles = ["benzoic acid"]
+
+[[substancia]]
+id = "acido_salicilico"
+nome = "Ácido salicílico"
+smiles = "OC(=O)c1ccccc1O"
+iupac = ["ácido 2-hidroxibenzoico"]
+comuns = ["ácido salicílico"]
+ingles = ["salicylic acid"]
+
+[[substancia]]
+id = "acido_l_tartarico"
+nome = "Ácido L-tartárico (2R,3R)"
+smiles = "[C@@H]([C@H](C(=O)O)O)(C(=O)O)O"
+iupac = ["ácido (2R,3R)-2,3-di-hidroxibutanodioico"]
+comuns = ["ácido L-tartárico", "ácido L-(+)-tartárico", "ácido tartárico"]
+ingles = ["L-tartaric acid"]
+nota = "Forma natural, encontrada na uva. PubChem CID 444305 (Tabela 1 do TCC)."
+
+[[substancia]]
+id = "acido_d_tartarico"
+nome = "Ácido D-tartárico (2S,3S)"
+smiles = "[C@H]([C@@H](C(=O)O)O)(C(=O)O)O"
+iupac = ["ácido (2S,3S)-2,3-di-hidroxibutanodioico"]
+comuns = ["ácido D-tartárico", "ácido D-(-)-tartárico", "ácido tartárico"]
+ingles = ["D-tartaric acid"]
+nota = "Enantiômero do ácido L-tartárico."
+
+[[substancia]]
+id = "acido_meso_tartarico"
+nome = "Ácido meso-tartárico (2R,3S)"
+smiles = "[C@@H]([C@@H](C(=O)O)O)(C(=O)O)O"
+iupac = ["ácido (2R,3S)-2,3-di-hidroxibutanodioico"]
+comuns = ["ácido meso-tartárico", "ácido mesotartárico", "ácido tartárico"]
+ingles = ["meso-tartaric acid"]
+nota = "Composto meso: tem dois centros quirais, mas é opticamente inativo. PubChem CID 447315."
+
+[[substancia]]
+id = "acido_tartarico_sem_estereo"
+nome = "Ácido tartárico (sem estereoquímica definida)"
+smiles = "C(C(C(=O)O)O)(C(=O)O)O"
+iupac = ["ácido 2,3-di-hidroxibutanodioico"]
+comuns = ["ácido tartárico"]
+ingles = ["tartaric acid"]
+nota = "Sem configuração definida; útil para enumerar os estereoisômeros. PubChem CID 875."
+
+# ------------------------------------------------------------------ ésteres, éteres, aminas, amidas
+
+[[substancia]]
+id = "acetato_de_etila"
+nome = "Etanoato de etila"
+smiles = "CCOC(C)=O"
+iupac = ["etanoato de etila"]
+comuns = ["acetato de etila"]
+ingles = ["ethyl acetate"]
+
+[[substancia]]
+id = "eter_dietilico"
+nome = "Etoxietano"
+smiles = "CCOCC"
+iupac = ["etoxietano"]
+comuns = ["éter dietílico", "éter etílico", "éter comum"]
+ingles = ["diethyl ether", "ethoxyethane"]
+
+[[substancia]]
+id = "metilamina"
+nome = "Metanamina"
+smiles = "CN"
+iupac = ["metanamina"]
+comuns = ["metilamina"]
+ingles = ["methylamine"]
+
+[[substancia]]
+id = "etilamina"
+nome = "Etanamina"
+smiles = "CCN"
+iupac = ["etanamina"]
+comuns = ["etilamina"]
+ingles = ["ethylamine", "ethanamine"]
+
+[[substancia]]
+id = "anilina"
+nome = "Anilina"
+smiles = "Nc1ccccc1"
+iupac = ["fenilamina", "benzenamina"]
+comuns = ["anilina", "aminobenzeno"]
+ingles = ["aniline"]
+
+[[substancia]]
+id = "acetamida"
+nome = "Etanamida"
+smiles = "CC(N)=O"
+iupac = ["etanamida"]
+comuns = ["acetamida"]
+ingles = ["acetamide"]
+
+[[substancia]]
+id = "ureia"
+nome = "Ureia"
+smiles = "NC(N)=O"
+iupac = ["diaminometanal"]
+comuns = ["ureia", "carbamida"]
+ingles = ["urea"]
+
+[[substancia]]
+id = "nitrobenzeno"
+nome = "Nitrobenzeno"
+smiles = "O=[N+]([O-])c1ccccc1"
+iupac = ["nitrobenzeno"]
+ingles = ["nitrobenzene"]
+
+[[substancia]]
+id = "triclorometano"
+nome = "Triclorometano"
+smiles = "ClC(Cl)Cl"
+iupac = ["triclorometano"]
+comuns = ["clorofórmio"]
+ingles = ["chloroform", "trichloromethane"]
+
+# ------------------------------------------------------------------ biomoléculas
+
+[[substancia]]
+id = "glicose"
+nome = "D-glicose (forma cíclica, piranose)"
+smiles = "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O"
+comuns = ["glicose", "D-glicose", "glucose", "dextrose"]
+informais = ["açúcar do sangue"]
+ingles = ["glucose", "D-glucose", "dextrose"]
+nota = "Forma cíclica (piranose), sem definir o anômero (alfa ou beta)."
+
+[[substancia]]
+id = "glicose_aberta"
+nome = "D-glicose (cadeia aberta)"
+smiles = "O=C[C@H](O)[C@@H](O)[C@H](O)[C@H](O)CO"
+iupac = ["(2R,3S,4R,5R)-2,3,4,5,6-penta-hidroxi-hexanal"]
+comuns = ["glicose de cadeia aberta", "glicose em cadeia aberta"]
+nota = "Forma aldeídica (projeção de Fischer); em água predomina a forma cíclica."
+
+[[substancia]]
+id = "acido_ascorbico"
+nome = "Ácido L-ascórbico"
+smiles = "C([C@@H]([C@@H]1C(=C(C(=O)O1)O)O)O)O"
+comuns = ["ácido ascórbico", "ácido L-ascórbico"]
+informais = ["vitamina C"]
+ingles = ["ascorbic acid", "vitamin C"]
+
+[[substancia]]
+id = "adrenalina"
+nome = "Adrenalina (R)"
+smiles = "CNC[C@@H](C1=CC(=C(C=C1)O)O)O"
+comuns = ["adrenalina", "epinefrina"]
+ingles = ["epinephrine", "adrenaline"]
+nota = "Forma natural (R). PubChem CID 5816 (Tabela 1 do TCC)."
+
+[[substancia]]
+id = "cafeina"
+nome = "Cafeína"
+smiles = "Cn1cnc2c1c(=O)n(C)c(=O)n2C"
+iupac = ["1,3,7-trimetilpurina-2,6-diona"]
+comuns = ["cafeína"]
+ingles = ["caffeine"]
+
+[[substancia]]
+id = "nicotina"
+nome = "Nicotina (S)"
+smiles = "CN1CCC[C@H]1c1cccnc1"
+comuns = ["nicotina"]
+ingles = ["nicotine"]
+nota = "Forma natural (S), presente no tabaco."
+
+# ------------------------------------------------------------------ fármacos
+
+[[substancia]]
+id = "aas"
+nome = "Ácido acetilsalicílico"
+smiles = "CC(=O)Oc1ccccc1C(=O)O"
+iupac = ["ácido 2-acetoxibenzoico"]
+comuns = ["ácido acetilsalicílico", "AAS"]
+comerciais = ["Aspirina"]
+ingles = ["aspirin", "acetylsalicylic acid"]
+
+[[substancia]]
+id = "paracetamol"
+nome = "Paracetamol"
+smiles = "CC(=O)Nc1ccc(O)cc1"
+iupac = ["N-(4-hidroxifenil)etanamida"]
+comuns = ["paracetamol", "acetaminofeno"]
+comerciais = ["Tylenol"]
+ingles = ["paracetamol", "acetaminophen"]
+
+[[substancia]]
+id = "ibuprofeno"
+nome = "Ibuprofeno"
+smiles = "CC(C)Cc1ccc(cc1)C(C)C(=O)O"
+iupac = ["ácido 2-[4-(2-metilpropil)fenil]propanoico"]
+comuns = ["ibuprofeno"]
+comerciais = ["Advil", "Alivium"]
+ingles = ["ibuprofen"]
+nota = "Sem estereoquímica definida: o medicamento é vendido como mistura racêmica."
+
+[[substancia]]
+id = "dipirona"
+nome = "Dipirona sódica"
+smiles = "CN(CS(=O)(=O)[O-])c1c(C)n(C)n(-c2ccccc2)c1=O.[Na+]"
+comuns = ["dipirona", "dipirona sódica", "metamizol", "metamizol sódico"]
+comerciais = ["Novalgina"]
+ingles = ["metamizole sodium", "dipyrone"]
+nota = "Sal de sódio, forma usada nos medicamentos."
+
+# ------------------------------------------------------------------ inorgânicas
+
+[[substancia]]
+id = "agua"
+nome = "Água"
+smiles = "O"
+iupac = ["óxido de di-hidrogênio"]
+comuns = ["água"]
+ingles = ["water"]
+
+[[substancia]]
+id = "dioxido_de_carbono"
+nome = "Dióxido de carbono"
+smiles = "O=C=O"
+iupac = ["dióxido de carbono"]
+comuns = ["gás carbônico", "anidrido carbônico"]
+informais = ["gelo seco"]
+ingles = ["carbon dioxide"]
+nota = "Gelo seco é o dióxido de carbono no estado sólido."
+
+[[substancia]]
+id = "monoxido_de_carbono"
+nome = "Monóxido de carbono"
+smiles = "[C-]#[O+]"
+iupac = ["monóxido de carbono"]
+ingles = ["carbon monoxide"]
+
+[[substancia]]
+id = "amonia"
+nome = "Amônia"
+smiles = "N"
+iupac = ["azano"]
+comuns = ["amônia", "amoníaco"]
+ingles = ["ammonia"]
+
+[[substancia]]
+id = "cloreto_de_sodio"
+nome = "Cloreto de sódio"
+smiles = "[Na+].[Cl-]"
+iupac = ["cloreto de sódio"]
+informais = ["sal de cozinha"]
+ingles = ["sodium chloride"]
+nota = "O sal de cozinha também contém iodato de potássio, acrescentado por lei no Brasil."
+
+[[substancia]]
+id = "hidroxido_de_sodio"
+nome = "Hidróxido de sódio"
+smiles = "[Na+].[OH-]"
+iupac = ["hidróxido de sódio"]
+informais = ["soda cáustica"]
+ingles = ["sodium hydroxide"]
+
+[[substancia]]
+id = "bicarbonato_de_sodio"
+nome = "Hidrogenocarbonato de sódio"
+smiles = "[Na+].OC([O-])=O"
+iupac = ["hidrogenocarbonato de sódio"]
+comuns = ["bicarbonato de sódio"]
+informais = ["bicarbonato"]
+ingles = ["sodium bicarbonate", "sodium hydrogen carbonate"]
+
+[[substancia]]
+id = "carbonato_de_calcio"
+nome = "Carbonato de cálcio"
+smiles = "[Ca+2].[O-]C([O-])=O"
+iupac = ["carbonato de cálcio"]
+informais = ["calcário", "mármore"]
+ingles = ["calcium carbonate"]
+nota = "Calcário e mármore são rochas formadas principalmente por carbonato de cálcio."
+
+[[substancia]]
+id = "oxido_de_calcio"
+nome = "Óxido de cálcio"
+smiles = "[Ca+2].[O-2]"
+iupac = ["óxido de cálcio"]
+informais = ["cal virgem", "cal viva"]
+ingles = ["calcium oxide", "quicklime"]
+
+[[substancia]]
+id = "hidroxido_de_calcio"
+nome = "Hidróxido de cálcio"
+smiles = "[Ca+2].[OH-].[OH-]"
+iupac = ["hidróxido de cálcio"]
+informais = ["cal hidratada", "cal apagada", "cal extinta"]
+ingles = ["calcium hydroxide", "slaked lime"]
+
+[[substancia]]
+id = "hipoclorito_de_sodio"
+nome = "Hipoclorito de sódio"
+smiles = "[Na+].[O-]Cl"
+iupac = ["hipoclorito de sódio"]
+ingles = ["sodium hypochlorite"]
+
+[[substancia]]
+id = "acido_cloridrico"
+nome = "Cloreto de hidrogênio"
+smiles = "Cl"
+iupac = ["cloreto de hidrogênio", "ácido clorídrico"]
+ingles = ["hydrochloric acid", "hydrogen chloride"]
+nota = "Em água, o cloreto de hidrogênio forma o ácido clorídrico."
+
+[[substancia]]
+id = "acido_sulfurico"
+nome = "Ácido sulfúrico"
+smiles = "OS(=O)(=O)O"
+iupac = ["ácido sulfúrico"]
+informais = ["ácido de bateria"]
+ingles = ["sulfuric acid"]
+
+[[substancia]]
+id = "peroxido_de_hidrogenio"
+nome = "Peróxido de hidrogênio"
+smiles = "OO"
+iupac = ["peróxido de hidrogênio"]
+ingles = ["hydrogen peroxide"]
+
+# ------------------------------------------------------------------ misturas do dia a dia
+
+[[mistura]]
+id = "vinagre"
+nome = "Vinagre"
+informais = ["vinagre"]
+ingles = ["vinegar"]
+componentes = ["acido_etanoico", "agua"]
+principal = "acido_etanoico"
+nota = "Solução aquosa diluída de ácido acético."
+
+[[mistura]]
+id = "agua_sanitaria"
+nome = "Água sanitária"
+informais = ["água sanitária", "cândida"]
+ingles = ["bleach"]
+componentes = ["hipoclorito_de_sodio", "agua"]
+principal = "hipoclorito_de_sodio"
+nota = "Solução aquosa diluída de hipoclorito de sódio."
+
+[[mistura]]
+id = "agua_oxigenada"
+nome = "Água oxigenada"
+informais = ["água oxigenada"]
+componentes = ["peroxido_de_hidrogenio", "agua"]
+principal = "peroxido_de_hidrogenio"
+nota = "Solução aquosa de peróxido de hidrogênio; a concentração vem no rótulo em \"volumes\"."
+
+[[mistura]]
+id = "acido_muriatico"
+nome = "Ácido muriático"
+informais = ["ácido muriático"]
+componentes = ["acido_cloridrico", "agua"]
+principal = "acido_cloridrico"
+nota = "Ácido clorídrico comercial, usado em limpeza; é uma solução de cloreto de hidrogênio em água."
+
+[[mistura]]
+id = "formol"
+nome = "Formol"
+informais = ["formol", "formalina"]
+ingles = ["formalin"]
+componentes = ["metanal", "agua"]
+principal = "metanal"
+nota = "Solução aquosa de formaldeído (metanal)."
+
+[[mistura]]
+id = "alcool_em_gel"
+nome = "Álcool em gel"
+informais = ["álcool em gel", "álcool gel"]
+componentes = ["etanol", "agua"]
+principal = "etanol"
+nota = "Etanol em água com um espessante; o componente ativo é o etanol."
+
+[[mistura]]
+id = "glp"
+nome = "Gás liquefeito de petróleo (GLP)"
+comuns = ["GLP", "gás liquefeito de petróleo"]
+informais = ["gás de cozinha", "gás de botijão"]
+ingles = ["liquefied petroleum gas", "LPG"]
+componentes = ["propano", "butano"]
+nota = "Mistura de hidrocarbonetos, principalmente propano e butano."
