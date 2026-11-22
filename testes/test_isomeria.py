@@ -52,7 +52,7 @@ def test_formula_invalida(texto):
     ],
 )
 def test_numero_de_isomeros_constitucionais(formula, total):
-    assert gerar_isomeros(formula, mostrar_todos=True)["total"] == total
+    assert gerar_isomeros(formula)["total"] == total
 
 
 def test_c4h10o_quatro_alcoois_e_tres_eteres():
@@ -63,20 +63,12 @@ def test_c4h10o_quatro_alcoois_e_tres_eteres():
     }
 
 
-def test_estruturas_improvaveis_ficam_ocultas_por_padrao():
-    r = gerar_isomeros("C4H6")
-    assert (r["total"], r["ocultos"]) == (9, 4)
-    assert {i["smiles"] for i in r["isomeros"]} == {"C#CCC", "CC#CC", "C=CC=C", "C=C1CC1", "C1C2CC12"}
-    todos = gerar_isomeros("C4H6", mostrar_todos=True)
-    motivos = {i["smiles"]: i["motivos_instabilidade"] for i in todos["isomeros"]}
-    assert motivos["C1=CCC1"] == ["dupla em anel de 3 ou 4 átomos"]
-    assert motivos["C=C=CC"] == ["duplas acumuladas C=C=C"]
-
-
-def test_peroxido_oculto():
-    r = gerar_isomeros("C2H6O2", mostrar_todos=True)
-    assert "ligação O–O (peróxido)" in next(i for i in r["isomeros"] if i["smiles"] == "COOC")["motivos_instabilidade"]
-    assert "COOC" not in {i["smiles"] for i in gerar_isomeros("C2H6O2")["isomeros"]}
+def test_todas_as_estruturas_aparecem():
+    # O filtro de estruturas improváveis foi retirado: ciclobuteno, aleno e peróxidos aparecem
+    assert {"C1=CCC1", "C=C=CC"} <= {i["smiles"] for i in gerar_isomeros("C4H6")["isomeros"]}
+    assert "COOC" in {i["smiles"] for i in gerar_isomeros("C2H6O2")["isomeros"]}
+    r = gerar_isomeros("C3H4")
+    assert len(r["isomeros"]) == r["total"] == 3
 
 
 def test_enol_continua_visivel():
@@ -105,7 +97,7 @@ def test_resultado_vira_json():
 
 @pytest.mark.parametrize("formula, total", [("C8H18", 24), ("C4H8", 6), ("C5H10", 13), ("C4H10O", 8)])
 def test_total_com_estereoisomeros(formula, total):
-    isomeros = gerar_isomeros(formula, mostrar_todos=True)["isomeros"]
+    isomeros = gerar_isomeros(formula)["isomeros"]
     assert sum(analisar_isomeria_espacial(i["smiles"])["total_estereoisomeros"] for i in isomeros) == total
 
 

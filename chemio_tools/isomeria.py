@@ -13,15 +13,14 @@ Isomeria a partir da fórmula molecular.
    todas. Valências fixas: C 4, N 3, O 2, S 2, halogênios 1; sem cargas (grupos como o
    nitro, que só existem com cargas formais, não são gerados).
 
-2. Estruturas improváveis ficam ocultas por padrão (podem ser mostradas):
-   tripla em anel com menos de 8 átomos, dupla em anel de 3 ou 4 átomos, ligação O–O
-   (peróxido) e duplas acumuladas C=C=C. Enóis continuam visíveis (tautomeria).
+   Todas as estruturas possíveis são mostradas, inclusive as muito tensionadas ou
+   instáveis (o gerador não faz suposições sobre estabilidade).
 
-3. classificar_par_isomeros(a, b): tipo de isomeria entre duas estruturas, com o critério
+2. classificar_par_isomeros(a, b): tipo de isomeria entre duas estruturas, com o critério
    usado escrito por extenso (função, cadeia, posição, metameria, tautomeria; geométrica
    ou óptica quando a diferença é só espacial).
 
-4. analisar_isomeria_espacial(smiles): isomeria geométrica e óptica de uma estrutura,
+3. analisar_isomeria_espacial(smiles): isomeria geométrica e óptica de uma estrutura,
    usando as funções de estereoquímica que já existiam no ChemioKit.
 
 Todas as funções devolvem tipos que viram JSON.
@@ -298,29 +297,6 @@ def descrever_cadeia(c: dict) -> str:
     return ", ".join(partes)
 
 
-# ------------------------------------------------------------------ estruturas improváveis
-
-
-def motivos_instabilidade(mol: Chem.Mol) -> list[str]:
-    motivos = []
-    for b in mol.GetBonds():
-        tipo = b.GetBondType()
-        if tipo == Chem.BondType.TRIPLE and any(b.IsInRingSize(k) for k in range(3, 8)):
-            motivos.append("tripla em anel pequeno")
-        if tipo == Chem.BondType.DOUBLE and (b.IsInRingSize(3) or b.IsInRingSize(4)):
-            motivos.append("dupla em anel de 3 ou 4 átomos")
-        if b.GetBeginAtom().GetSymbol() == "O" and b.GetEndAtom().GetSymbol() == "O":
-            motivos.append("ligação O–O (peróxido)")
-    for a in mol.GetAtoms():
-        duplas_com_c = [
-            b for b in a.GetBonds()
-            if b.GetBondType() == Chem.BondType.DOUBLE and b.GetOtherAtom(a).GetSymbol() == "C"
-        ]
-        if a.GetSymbol() == "C" and len(duplas_com_c) >= 2:
-            motivos.append("duplas acumuladas C=C=C")
-    return sorted(set(motivos))
-
-
 # ------------------------------------------------------------------ nomes do glossário
 
 _nomes_glossario: dict[str, str] | None = None
@@ -367,12 +343,12 @@ def _resumo_estereo(mol: Chem.Mol) -> dict:
     }
 
 
-def gerar_isomeros(formula: str, mostrar_todos: bool = False, limite_atomos: int = LIMITE_ATOMOS_PESADOS) -> dict:
+def gerar_isomeros(formula: str, limite_atomos: int = LIMITE_ATOMOS_PESADOS) -> dict:
     """
     Gera os isômeros constitucionais da fórmula. Resultado:
       status: "ok" | "formula_invalida" | "muito_grande"
-      formula, insaturacoes, total (todas as estruturas), ocultos (improváveis não mostrados),
-      isomeros: [{smiles, funcoes, grupo, cadeia, descricao_cadeia, motivos_instabilidade,
+      formula, insaturacoes, total,
+      isomeros: [{smiles, funcoes, grupo, cadeia, descricao_cadeia,
                   estereo (resumo), nome (glossário, se houver), chave_conectividade}]
       grupos: {grupo: [posições na lista isomeros]}
     """
@@ -399,13 +375,8 @@ def gerar_isomeros(formula: str, mostrar_todos: bool = False, limite_atomos: int
 
     nomes = _indice_glossario()
     isomeros = []
-    ocultos = 0
     for smiles in sorted(todos, key=lambda s: (len(s), s)):
         mol = Chem.MolFromSmiles(smiles)
-        motivos = motivos_instabilidade(mol)
-        if motivos and not mostrar_todos:
-            ocultos += 1
-            continue
         funcoes = identificar_funcoes(mol)
         cadeia = classificar_cadeia(mol)
         chave = chave_conectividade(mol)
@@ -416,7 +387,6 @@ def gerar_isomeros(formula: str, mostrar_todos: bool = False, limite_atomos: int
                 "grupo": " + ".join(funcoes),
                 "cadeia": cadeia,
                 "descricao_cadeia": descrever_cadeia(cadeia),
-                "motivos_instabilidade": motivos,
                 "estereo": _resumo_estereo(mol),
                 "nome": nomes.get(chave),
                 "chave_conectividade": chave,
@@ -432,7 +402,6 @@ def gerar_isomeros(formula: str, mostrar_todos: bool = False, limite_atomos: int
         "formula": f["formula"],
         "insaturacoes": f["insaturacoes"],
         "total": len(todos),
-        "ocultos": ocultos,
         "isomeros": isomeros,
         "grupos": grupos,
     }

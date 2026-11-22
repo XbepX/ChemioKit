@@ -12,8 +12,8 @@ COLUNAS = 4
 
 
 @st.cache_data(show_spinner=False, max_entries=20)
-def _gerar(formula: str, mostrar_todos: bool) -> dict:
-    return gerar_isomeros(formula, mostrar_todos=mostrar_todos)
+def _gerar(formula: str) -> dict:
+    return gerar_isomeros(formula)
 
 
 @st.cache_data(show_spinner=False, max_entries=500)
@@ -49,26 +49,25 @@ def renderizar_aba_isomeria():
     )
 
     with st.form("form_isomeria", border=False):
-        c_formula, c_opcao, c_botao = st.columns([2, 2, 1], vertical_alignment="bottom")
+        c_formula, c_botao, _ = st.columns([2, 1, 2], vertical_alignment="bottom")
         formula = c_formula.text_input("Fórmula molecular:", value="C4H10O", key="iso_formula")
-        mostrar_todos = c_opcao.checkbox(
-            "Mostrar estruturas improváveis",
-            help="Tripla em anel pequeno, dupla em anel de 3 ou 4 átomos, ligação O–O e duplas acumuladas C=C=C.",
-        )
         c_botao.form_submit_button("Gerar")
 
     with st.spinner("Gerando as estruturas..."):
-        res = _gerar(formula.strip(), mostrar_todos)
+        res = _gerar(formula.strip())
 
     if res["status"] != "ok":
         st.warning(res["mensagem"])
         return
 
     isomeros = res["isomeros"]
-    texto_ocultos = f" ({res['ocultos']} estruturas improváveis ocultas)" if res["ocultos"] else ""
     st.success(
-        f"**{res['formula']}**: {res['total']} isômeros constitucionais possíveis{texto_ocultos}. "
+        f"**{res['formula']}**: {res['total']} isômeros constitucionais possíveis. "
         f"Insaturações (anéis + ligações π): {res['insaturacoes']}."
+    )
+    st.caption(
+        "Todas as estruturas matematicamente possíveis aparecem, inclusive as muito tensionadas ou instáveis "
+        "que não existem na prática."
     )
 
     # Nomes do PubChem (opcional, precisa de internet)
@@ -84,14 +83,10 @@ def renderizar_aba_isomeria():
         conhecidos = sum(1 for i in isomeros if i["chave_conectividade"] in nomes)
         st.caption(f"{conhecidos} de {len(isomeros)} isômeros estão cadastrados no PubChem (nomes em inglês).")
 
-    if not isomeros:
-        st.info("Todas as estruturas desta fórmula são improváveis. Marque a opção acima para vê-las.")
-        return
-
     # Grupos por função
     grupos = res["grupos"]
     st.markdown("**Isômeros por função:** " + " · ".join(f"{g} ({len(ix)})" for g, ix in grupos.items()))
-    chave = res["formula"] + ("_todos" if mostrar_todos else "")
+    chave = res["formula"]
     grupo = st.selectbox("Mostrar:", ["Todos"] + list(grupos), key=f"iso_grupo_{chave}")
     indices = list(range(len(isomeros))) if grupo == "Todos" else grupos[grupo]
 
@@ -110,8 +105,6 @@ def renderizar_aba_isomeria():
                 st.code(iso["smiles"], language="text")
                 st.caption(f"{iso['grupo']} · cadeia {iso['descricao_cadeia']}")
                 st.caption(f"Isomeria espacial: {_selos_estereo(iso['estereo'])}")
-                if iso["motivos_instabilidade"]:
-                    st.caption("⚠️ Improvável: " + ", ".join(iso["motivos_instabilidade"]))
                 st.button("Abrir no ChemioKit", key=f"iso_abrir_{chave}_{i}", on_click=_abrir_no_chemiokit, args=(iso["smiles"],))
 
     st.divider()

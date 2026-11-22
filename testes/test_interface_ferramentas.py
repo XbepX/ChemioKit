@@ -39,3 +39,10 @@ def test_aba_exportar_tem_png_e_svg(app):
     assert "⬇️ Baixar Imagem PNG (.png)" in rotulos
     assert "⬇️ Baixar Imagem SVG (.svg)" in rotulos
     assert "⬇️ Baixar Bloco SDF (.sdf)" in rotulos  # o que já existia continua
+
+
+def test_3d_sem_seletor_de_esquema_de_cores(app):
+    app.radio[0].set_value("3D").run()
+    assert not app.exception
+    assert all(s.label != "Esquema de Cores" for s in app.selectbox)
+    assert any("CPK (Jmol)" in c.value for c in app.caption)

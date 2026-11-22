@@ -75,10 +75,6 @@ def renderizar_aba_visualizacao(smiles_input: str):
                     ["Ball & Stick", "Wireframe / Line", "Stick (Bastonetes)", "CPK / Esferas"]
                 )
                 opt_espessura_3d = st.slider("Espessura das ligações/linhas", 1, 10, 5)
-                opt_esquema_cor_3d = st.selectbox(
-                    "Esquema de Cores",
-                    ["Monocromático Escuro", "Elemento (Jmol)", "Carbono Preto (CPK)", "Monocromático Claro"]
-                )
                 opt_mostrar_h_3d = st.checkbox("Mostrar Hidrogênios", value=True)
                 opt_destacar_q_3d = st.checkbox("Destacar quirais (Malha 3D)", value=False)
                 opt_raio_malha = st.slider("Raio da malha quiral (Å)", 0.8, 2.5, 1.2, step=0.1)
@@ -140,11 +136,11 @@ def renderizar_aba_visualizacao(smiles_input: str):
                 auto_spin=opt_auto_spin,
                 destacar_quirais=opt_destacar_q_3d,
                 espessura_3d=opt_espessura_3d,
-                esquema_cor=opt_esquema_cor_3d,
                 raio_malha_quiral=opt_raio_malha
             )
             if html_3d:
                 components.html(html_3d, height=430, width=540)
+                st.caption("Cores dos átomos: CPK (Jmol). C preto (cinza no fundo escuro), H branco, O vermelho, N azul, S amarelo, Cl verde.")
             else:
                 st.warning("Não foi possível calcular a geometria 3D desta molécula.")
 

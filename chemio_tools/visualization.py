@@ -7,6 +7,7 @@ from PIL import Image
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
 from rdkit.Chem.Draw import rdMolDraw2D
+from .cores import esquema_cpk
 from .utils import validar_smiles, obter_mapa_carbonos
 
 # Faixa de carga parcial (Gasteiger) usada no gradiente do Mapa Eletrostático
@@ -229,10 +230,13 @@ def gerar_html_3d(
     auto_spin: bool = False,
     destacar_quirais: bool = False,
     espessura_3d: int = 4,
-    esquema_cor: str = "Elemento (Jmol)",
     raio_malha_quiral: float = 1.2
 ) -> str | None:
-    """Gera a visualização 3D interativa sincronizando os centros quirais com o modelo final."""
+    """
+    Gera a visualização 3D interativa sincronizando os centros quirais com o modelo final.
+    Os átomos usam um único esquema de cores, o CPK com as cores do Jmol (chemio_tools/cores.py),
+    com o carbono preto no fundo claro e cinza-escuro no fundo escuro.
+    """
     if not validar_smiles(smiles):
         return None
 
@@ -277,15 +281,7 @@ def gerar_html_3d(
     bg_color = "#1e1e1e" if fundo_escuro else "white"
     view.setBackgroundColor(bg_color)
 
-    spec_cor = {}
-    if esquema_cor == "Monocromático Escuro":
-        spec_cor = {"color": "#111111"}
-    elif esquema_cor == "Monocromático Claro":
-        spec_cor = {"color": "#f0f0f0"}
-    elif esquema_cor == "Carbono Preto (CPK)":
-        spec_cor = {"colorscheme": "blackCarbon"}
-    else:
-        spec_cor = {"colorscheme": "Jmol"}
+    spec_cor = {"colorscheme": esquema_cpk(fundo_escuro)}
 
     if estilo == "Wireframe / Line":
         raio_wireframe = 0.02 * espessura_3d
