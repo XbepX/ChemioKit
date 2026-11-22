@@ -152,3 +152,19 @@ def test_nome_vazio(nome):
 @pytest.mark.parametrize("nome", ["Etanol", "ácido tartárico", "vinagre", "etanoll", ""])
 def test_resultado_vira_json(nome):
     json.dumps(resolver_nome(nome), ensure_ascii=False)
+
+
+@pytest.mark.parametrize(
+    "consulta",
+    [
+        lambda: pubchem.pcp.get_compounds("ethanol", "name"),
+        lambda: pubchem.pcp.get_properties(["Title"], "C2H6O", "formula"),
+    ],
+    ids=["por_nome", "por_formula"],
+)
+def test_nenhum_teste_acessa_a_internet(consulta):
+    # Garante que o conftest.py bloqueia todas as consultas, mesmo num computador com internet
+    import urllib.error
+
+    with pytest.raises(urllib.error.URLError, match="rede desativada nos testes"):
+        consulta()
