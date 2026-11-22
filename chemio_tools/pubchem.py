@@ -68,3 +68,35 @@ def consultar_pubchem_com_tempo_limite(nome: str, tempo_limite: float = TEMPO_LI
         return executor.submit(buscar_candidatos_por_nome, nome).result(timeout=tempo_limite)
     finally:
         executor.shutdown(wait=False, cancel_futures=True)
+
+
+TEMPO_LIMITE_FORMULA = 25.0  # segundos; a busca por fórmula é assíncrona no PubChem e demora mais
+
+
+def buscar_nomes_por_formula(formula: str, maximo: int = 2000) -> dict[str, dict]:
+    """
+    Compostos do PubChem com a fórmula dada, indexados pelo primeiro bloco do InChIKey
+    (a "constituição", sem estereoquímica). Para cada bloco fica o registro de menor CID,
+    que costuma ser o composto sem estereoquímica definida. O nome é o título do registro
+    no PubChem (em inglês). Falhas de rede são propagadas como exceção.
+    """
+    if not formula or not formula.strip():
+        return {}
+    registros = pcp.get_properties(["Title", "InChIKey"], formula.strip(), "formula", MaxRecords=maximo)
+    nomes: dict[str, dict] = {}
+    for r in registros:
+        chave = (r.get("InChIKey") or "")[:14]
+        cid = r.get("CID")
+        if not chave or not cid:
+            continue
+        if chave not in nomes or cid < nomes[chave]["cid"]:
+            nomes[chave] = {"cid": int(cid), "nome": r.get("Title")}
+    return nomes
+
+
+def consultar_formula_com_tempo_limite(formula: str, tempo_limite: float = TEMPO_LIMITE_FORMULA) -> dict[str, dict]:
+    executor = ThreadPoolExecutor(max_workers=1)
+    try:
+        return executor.submit(buscar_nomes_por_formula, formula).result(timeout=tempo_limite)
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)

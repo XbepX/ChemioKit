@@ -10,6 +10,13 @@ from .identificadores import obter_identificadores
 from .farmaco import avaliar_lipinski, calcular_qed, buscar_alertas_estruturais
 from .estrutura import analisar_aneis, obter_esqueleto_murcko, gerar_tautomeros
 from .comparacao import comparar_moleculas
+from .isomeria import (
+    interpretar_formula,
+    gerar_isomeros,
+    analisar_isomeria_espacial,
+    classificar_par_isomeros,
+    buscar_nomes_isomeros,
+)
 
 __all__ = [
     "validar_smiles",
@@ -36,4 +43,9 @@ __all__ = [
     "obter_esqueleto_murcko",
     "gerar_tautomeros",
     "comparar_moleculas",
+    "interpretar_formula",
+    "gerar_isomeros",
+    "analisar_isomeria_espacial",
+    "classificar_par_isomeros",
+    "buscar_nomes_isomeros",
 ]

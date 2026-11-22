@@ -4,7 +4,8 @@ from ui import (
     renderizar_secao_entradas,
     renderizar_aba_visualizacao,
     renderizar_aba_propriedades,
-    renderizar_aba_exportacao
+    renderizar_aba_exportacao,
+    renderizar_aba_isomeria
 )
 
 # Configuração da página
@@ -32,10 +33,11 @@ if "ultimo_smiles" not in st.session_state or st.session_state.ultimo_smiles != 
     st.session_state.grupo_ativo = "Nenhum"
 
 # 2. Estrutura de Abas
-tab_vis, tab_props, tab_export = st.tabs([
+tab_vis, tab_props, tab_export, tab_iso = st.tabs([
     "👁️ Visualização & Análise Interativa",
     "📊 Propriedades & Composição",
-    "💾 Exportar Estrutura"
+    "💾 Exportar Estrutura",
+    "🔀 Isomeria"
 ])
 
 # 3. Chamada dos Módulos da Pasta UI
@@ -47,3 +49,6 @@ with tab_props:
 
 with tab_export:
     renderizar_aba_exportacao(smiles_input)
+
+with tab_iso:
+    renderizar_aba_isomeria()

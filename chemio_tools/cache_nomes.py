@@ -1,15 +1,17 @@
 """
-Cache local das consultas ao PubChem (nome -> SMILES).
+Cache local das consultas ao PubChem (nomes e fórmulas).
 
-Adaptado de ChemioChat_app/agente/cache_nomes.py. Guarda apenas as consultas
-bem-sucedidas que devolveram um único registro (nome consultado, SMILES, CID e nome
-IUPAC), para que esses nomes funcionem depois sem internet. A tabela de registros de
-verificação do ChemioChat não foi trazida.
+Adaptado de ChemioChat_app/agente/cache_nomes.py. Guarda apenas consultas
+bem-sucedidas, para que funcionem depois sem internet:
+  - nomes -> SMILES (só quando o PubChem devolveu um único registro);
+  - fórmula -> nomes dos compostos com essa fórmula (ambiente de isomeria).
+A tabela de registros de verificação do ChemioChat não foi trazida.
 
 O arquivo fica em dados/cache_nomes.sqlite (pasta ignorada pelo git). Qualquer falha
 de leitura ou gravação é ignorada: o cache é opcional.
 """
 
+import json
 import sqlite3
 import time
 from contextlib import closing
@@ -31,6 +33,13 @@ def _conectar() -> sqlite3.Connection:
                smiles TEXT NOT NULL,
                cid INTEGER,
                nome_iupac TEXT,
+               gravado_em REAL NOT NULL
+           )"""
+    )
+    conexao.execute(
+        """CREATE TABLE IF NOT EXISTS formulas (
+               formula TEXT PRIMARY KEY,
+               nomes TEXT NOT NULL,
                gravado_em REAL NOT NULL
            )"""
     )
@@ -70,6 +79,27 @@ def salvar(nome: str, registro: dict) -> None:
                     registro.get("nome_iupac"),
                     time.time(),
                 ),
+            )
+    except (sqlite3.Error, OSError):
+        pass
+
+
+def obter_formula(formula: str) -> dict | None:
+    """Nomes guardados para a fórmula (bloco do InChIKey -> {cid, nome}), ou None."""
+    try:
+        with closing(_conectar()) as conexao, conexao:
+            linha = conexao.execute("SELECT nomes FROM formulas WHERE formula = ?", (formula.strip(),)).fetchone()
+    except (sqlite3.Error, OSError):
+        return None
+    return json.loads(linha[0]) if linha else None
+
+
+def salvar_formula(formula: str, nomes: dict) -> None:
+    try:
+        with closing(_conectar()) as conexao, conexao:
+            conexao.execute(
+                "INSERT OR REPLACE INTO formulas VALUES (?, ?, ?)",
+                (formula.strip(), json.dumps(nomes, ensure_ascii=False), time.time()),
             )
     except (sqlite3.Error, OSError):
         pass
