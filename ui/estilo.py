@@ -51,6 +51,8 @@ def aplicar_css(modo: str):
         padding: 0.5rem 0 0.25rem 0;
     }}
     .st-key-cartao h3 {{ margin: 0; padding: 0; }}
+    /* Esconde a dica do Streamlit "Press Enter to submit form" (em inglês); o botão Buscar está ao lado */
+    [data-testid="InputInstructions"] {{ display: none; }}
     """
     if modo == "aula":
         css += """

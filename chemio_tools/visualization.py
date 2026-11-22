@@ -237,37 +237,57 @@ def gerar_html_3d(
     destacar_quirais: bool = False,
     espessura_3d: int = 4,
     raio_malha_quiral: float = 1.2,
-    largura: int = 520,
-    altura: int = 420
+    largura: int | str = 520,
+    altura: int | str = 420,
+    indices_destaque: list[int] | None = None,
+    rotulos_carbonos: bool = False,
+    rotulos_hibridizacao: bool = False
 ) -> str | None:
     """
     Gera a visualização 3D interativa sincronizando os centros quirais com o modelo final.
     Os átomos usam um único esquema de cores, o CPK com as cores do Jmol (chemio_tools/cores.py),
     com o carbono preto no fundo claro e cinza-escuro no fundo escuro.
+
+    indices_destaque: átomos (índices do SMILES) marcados com esferas laranja translúcidas,
+        como os destaques do 2D (grupo funcional, alerta, subestrutura comum).
+    rotulos_carbonos: escreve C1, C2... sobre os carbonos, na mesma numeração do 2D.
+    rotulos_hibridizacao: escreve sp³, sp² ou sp sobre cada carbono (junto com C1, C2... se
+        rotulos_carbonos também estiver ligado).
+    largura/altura: pixels (int) ou medida CSS (str), por exemplo "100%".
+    A geometria é sempre calculada com os hidrogênios (fica mais realista); com
+    mostrar_h=False eles são retirados só do desenho. Os átomos do SMILES mantêm os índices.
     """
     if not validar_smiles(smiles):
         return None
 
     mol = Chem.MolFromSmiles(smiles.strip())
-    mol_3d = Chem.AddHs(mol) if mostrar_h else mol
+    mol_h = Chem.AddHs(mol)
 
-    if AllChem.EmbedMolecule(mol_3d, randomSeed=42) != 0:
+    if AllChem.EmbedMolecule(mol_h, randomSeed=42) != 0:
         return None
 
-    AllChem.MMFFOptimizeMolecule(mol_3d)
+    AllChem.MMFFOptimizeMolecule(mol_h)
 
-    # Cargas parciais de Gasteiger (usadas pelo Mapa Eletrostático).
+    # Cargas parciais de Gasteiger (usadas pelo Mapa Eletrostático), calculadas com os H.
     # Ficam em "_GasteigerCharge" no RDKit e NÃO são escritas no MolBlock,
     # por isso são enviadas ao viewer abaixo via mapAtomProperties.
     cargas_parciais = None
     try:
-        AllChem.ComputeGasteigerCharges(mol_3d)
+        AllChem.ComputeGasteigerCharges(mol_h)
         cargas_parciais = []
-        for atomo in mol_3d.GetAtoms():
+        for atomo in mol_h.GetAtoms():
             carga = atomo.GetDoubleProp("_GasteigerCharge")
             cargas_parciais.append(carga if math.isfinite(carga) else 0.0)
     except Exception:
         cargas_parciais = None
+
+    if mostrar_h:
+        mol_3d = mol_h
+    else:
+        # Os H que AddHs acrescentou ficam no fim; tirá-los mantém os índices dos átomos do SMILES
+        mol_3d = Chem.RemoveHs(mol_h)
+        if cargas_parciais is not None:
+            cargas_parciais = cargas_parciais[:mol_3d.GetNumAtoms()]
 
     mol_block = Chem.MolToMolBlock(mol_3d)
 
@@ -314,11 +334,12 @@ def gerar_html_3d(
         dict_sphere.update(spec_cor)
         view.setStyle({"stick": dict_stick, "sphere": dict_sphere})
 
+    conf = mol_3d.GetConformer()
+
     # Destaque dos Centros Quirais no modelo 3D
     if destacar_quirais:
         Chem.AssignStereochemistry(mol_3d, cleanIt=True, force=True, flagPossibleStereoCenters=True)
         centros = Chem.FindMolChiralCenters(mol_3d, includeUnassigned=True)
-        conf = mol_3d.GetConformer()
 
         for idx, _ in centros:
             pos = conf.GetAtomPosition(idx)
@@ -328,6 +349,40 @@ def gerar_html_3d(
                 "color": "#00aaff",
                 "wireframe": True,
                 "opacity": 0.45
+            })
+
+    # Destaque de átomos escolhidos (grupo funcional, alerta estrutural, subestrutura comum)
+    for idx in indices_destaque or []:
+        if 0 <= idx < mol_3d.GetNumAtoms():
+            pos = conf.GetAtomPosition(idx)
+            view.addSphere({
+                "center": {"x": pos.x, "y": pos.y, "z": pos.z},
+                "radius": 0.85,
+                "color": "#ff9900",
+                "opacity": 0.35
+            })
+
+    # Rótulos C1, C2... (mesma numeração do desenho 2D) e/ou hibridização
+    if rotulos_carbonos or rotulos_hibridizacao:
+        sobrescrito = {"sp3": "sp³", "sp2": "sp²", "sp": "sp"}
+        for idx, rotulo in obter_mapa_carbonos(mol).items():
+            partes = [rotulo] if rotulos_carbonos else []
+            if rotulos_hibridizacao:
+                hib = _HIBRIDIZACAO_RDKIT.get(mol.GetAtomWithIdx(idx).GetHybridization())
+                if hib:
+                    partes.append(sobrescrito[hib])
+            if not partes:
+                continue
+            pos = conf.GetAtomPosition(idx)
+            view.addLabel(" ".join(partes), {
+                "position": {"x": pos.x, "y": pos.y, "z": pos.z},
+                "fontSize": 13,
+                "fontColor": "white" if fundo_escuro else "black",
+                "showBackground": True,
+                "backgroundColor": "#1e1e1e" if fundo_escuro else "white",
+                "backgroundOpacity": 0.7,
+                "alignment": "center",
+                "inFront": True
             })
 
     # Superfície Eletrônica

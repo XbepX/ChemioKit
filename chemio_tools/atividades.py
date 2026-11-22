@@ -125,7 +125,7 @@ def gerar_atividade(tipo: str, smiles: str, smiles_b: str | None = None, semente
 
     # tipo == "isomeria"
     if smiles_b is None:
-        res = gerar_isomeros(CalcMolFormula(mol))
+        res = gerar_isomeros(CalcMolFormula(mol), tempo_limite=5)
         if res["status"] != "ok":
             return None
         proprio = Chem.MolToSmiles(mol, isomericSmiles=False)
@@ -149,6 +149,26 @@ def gerar_atividade(tipo: str, smiles: str, smiles_b: str | None = None, semente
         "dica": "Compare nesta ordem: as funções são as mesmas? A cadeia é do mesmo tipo? "
         "Muda só a posição de um grupo, ou de um heteroátomo?",
     }
+
+
+def itens_sem_resposta(atividade: dict, resposta: object) -> list[str]:
+    """
+    O que o estudante ainda não respondeu (lista vazia = pode corrigir). Para "quirais",
+    None significa "nada marcado"; lista vazia significa que marcou "Nenhum".
+    """
+    tipo = atividade["tipo"]
+    if tipo == "quirais":
+        return ["marque os carbonos quirais ou “Nenhum”"] if resposta is None else []
+    if tipo == "hibridizacao":
+        resposta = resposta or {}
+        return [item for item in atividade["itens"] if resposta.get(item) is None]
+    if tipo == "sigma_pi":
+        resposta = resposta or {}
+        return [nome for chave, nome in (("sigma", "ligações σ"), ("pi", "ligações π")) if resposta.get(chave) is None]
+    if tipo == "cadeia":
+        resposta = resposta or {}
+        return [p["pergunta"] for p in atividade["perguntas"] if resposta.get(p["atributo"]) is None]
+    return ["escolha o tipo de isomeria"] if resposta is None else []
 
 
 def corrigir_atividade(atividade: dict, resposta: object) -> dict:
@@ -191,7 +211,7 @@ def corrigir_atividade(atividade: dict, resposta: object) -> dict:
 
 @lru_cache(maxsize=256)
 def _total_isomeros(formula: str) -> int:
-    res = gerar_isomeros(formula)
+    res = gerar_isomeros(formula, tempo_limite=5)
     return res["total"] if res["status"] == "ok" else 0
 
 

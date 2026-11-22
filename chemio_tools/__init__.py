@@ -4,7 +4,7 @@ from .stereochemistry import identificar_centros_quirais, gerar_estereoisomeros,
 from .visualization import gerar_imagem_2d, gerar_html_3d, exportar_imagem_2d
 from .io_handlers import carregar_mol_de_texto, exportar_bloco_3d
 from .glossario import buscar_no_glossario
-from .busca_nome import resolver_nome
+from .busca_nome import resolver_nome, resolver_entrada
 from .ligacoes import analisar_hibridizacao_e_ligacoes
 from .identificadores import obter_identificadores
 from .farmaco import avaliar_lipinski, calcular_qed, buscar_alertas_estruturais
@@ -25,7 +25,7 @@ from .explicacoes import (
     explicar_cadeia,
     obter_enantiomero,
 )
-from .atividades import TIPOS_ATIVIDADE, gerar_atividade, corrigir_atividade, moleculas_para_praticar
+from .atividades import TIPOS_ATIVIDADE, gerar_atividade, corrigir_atividade, itens_sem_resposta, moleculas_para_praticar
 
 __all__ = [
     "validar_smiles",
@@ -42,6 +42,7 @@ __all__ = [
     "exportar_bloco_3d",
     "buscar_no_glossario",
     "resolver_nome",
+    "resolver_entrada",
     "exportar_imagem_2d",
     "analisar_hibridizacao_e_ligacoes",
     "obter_identificadores",
@@ -66,5 +67,6 @@ __all__ = [
     "TIPOS_ATIVIDADE",
     "gerar_atividade",
     "corrigir_atividade",
+    "itens_sem_resposta",
     "moleculas_para_praticar",
 ]

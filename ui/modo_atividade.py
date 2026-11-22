@@ -10,10 +10,10 @@ import random
 
 import streamlit as st
 
-from chemio_tools import TIPOS_ATIVIDADE, corrigir_atividade, gerar_atividade, gerar_imagem_2d, moleculas_para_praticar
+from chemio_tools import TIPOS_ATIVIDADE, corrigir_atividade, gerar_atividade, itens_sem_resposta, moleculas_para_praticar
 
 from .estado import definir_modo, definir_molecula, molecula
-from .estilo import ESCALA_ROTULOS
+from .visor import seletor_dimensao, visor
 
 ROTULO_HIB = {"sp3": "sp³", "sp2": "sp²", "sp": "sp"}
 
@@ -68,6 +68,10 @@ def _formulario(a: dict, prefixo: str):
     tipo = a["tipo"]
     if tipo == "quirais":
         marcados = st.pills("Carbonos quirais", a["opcoes"] + ["Nenhum"], selection_mode="multi", key=f"{prefixo}_quirais")
+        if not marcados:
+            return None  # nada marcado (diferente de marcar "Nenhum")
+        if "Nenhum" in marcados and len(marcados) > 1:
+            return "conflito"
         return [] if "Nenhum" in marcados else marcados
     if tipo == "hibridizacao":
         resposta = {}
@@ -129,12 +133,17 @@ def renderizar_modo_atividade(smiles: str):
     col_img, col_resp = st.columns([1, 1.2], gap="large")
     with col_img:
         if a["tipo"] == "isomeria":
+            dim = seletor_dimensao(f"{prefixo}_par")
             ia, ib = st.columns(2)
-            ia.image(gerar_imagem_2d(a["smiles"], espessura_linha=2, tamanho_fonte=14), caption="Estrutura A")
-            ib.image(gerar_imagem_2d(a["smiles_b"], espessura_linha=2, tamanho_fonte=14), caption="Estrutura B")
+            with ia:
+                visor(a["smiles"], dim, altura_3d=280, legenda="Estrutura A")
+            with ib:
+                visor(a["smiles_b"], dim, altura_3d=280, legenda="Estrutura B")
         else:
-            mostrar_h = st.toggle("Mostrar hidrogênios", value=a["tipo"] == "sigma_pi", key=f"{prefixo}_hs")
-            st.image(gerar_imagem_2d(a["smiles"], mostrar_indices=True, mostrar_h=mostrar_h, espessura_linha=2, tamanho_fonte=14, escala_rotulos=ESCALA_ROTULOS))
+            with st.container(horizontal=True, vertical_alignment="center"):
+                dim = seletor_dimensao(f"{prefixo}_dim")
+                mostrar_h = st.toggle("Hidrogênios", value=a["tipo"] == "sigma_pi", key=f"{prefixo}_hs")
+            visor(a["smiles"], dim, rotulos=True, hidrogenios=mostrar_h, altura_3d=380)
 
     with col_resp:
         st.markdown(f"**{a['enunciado']}**")
@@ -145,8 +154,14 @@ def renderizar_modo_atividade(smiles: str):
             st.markdown(a["dica"])
 
         if verificar:
-            st.session_state.correcao = corrigir_atividade(a, resposta)
-            st.session_state.revelar = False
+            faltam = ["desmarque “Nenhum” ou os carbonos: as duas respostas não combinam"] if resposta == "conflito" \
+                else itens_sem_resposta(a, resposta)
+            if faltam:
+                st.session_state.pop("correcao", None)
+                st.warning("Responda antes de verificar: " + "; ".join(faltam) + ".", icon="✋")
+            else:
+                st.session_state.correcao = corrigir_atividade(a, resposta)
+                st.session_state.revelar = False
 
         correcao = st.session_state.get("correcao")
         if correcao:

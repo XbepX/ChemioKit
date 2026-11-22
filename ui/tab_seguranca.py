@@ -2,7 +2,7 @@
 
 import streamlit as st
 
-from chemio_tools import gerar_imagem_2d
+from .visor import janela
 
 
 
@@ -21,7 +21,7 @@ def renderizar_aba_seguranca(smiles_input: str, alertas: dict):
         cols = st.columns(3)
         for k, a in enumerate(lista):
             with cols[k % 3]:
-                st.image(gerar_imagem_2d(smiles_input, indices_destaque_extra=a["indices"], espessura_linha=2, tamanho_fonte=12))
+                janela(smiles_input, f"alerta_{catalogo}_{k}", indices=a["indices"], altura_3d=260)
                 st.markdown(f"**{a['nome'].replace('_', ' ')}**")
     if st.session_state.get("tecnico"):
         st.caption("Catálogos do RDKit (FilterCatalog): Brenk et al., ChemMedChem 2008; Baell e Holloway, J. Med. Chem. 2010 (PAINS); "

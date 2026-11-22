@@ -24,8 +24,11 @@ pag_molecula = st.Page(pagina_molecula, title="Molécula", icon="🧪", url_path
 pag_isomeria = st.Page(pagina_isomeria, title="Isomeria", icon="🔀", url_path="isomeria")
 pagina = st.navigation([pag_molecula, pag_isomeria], position="hidden" if modo == "aula" else "sidebar")
 
+# Botões que levam a outra página ("Abrir no ChemioKit" na Isomeria; "Ver os isômeros" na busca)
 if st.session_state.pop("ir_para_molecula", False) and pagina.title != pag_molecula.title:
     st.switch_page(pag_molecula)
+if st.session_state.pop("ir_para_isomeria", False) and pagina.title != pag_isomeria.title:
+    st.switch_page(pag_isomeria)
 
 aplicar_css(modo)
 
@@ -43,7 +46,7 @@ if modo != "aula":
                 st.toggle("Detalhes técnicos", key="w_tecnico", on_change=estado.copiar_widget, args=("w_tecnico", "tecnico"),
                           help="Tabela completa, métodos, versões e exportação de dados.")
             st.divider()
-            renderizar_secao_entradas()
+            renderizar_secao_entradas()  # histórico e exemplos; a busca fica na página
         st.divider()
         st.caption(f"ChemioKit · RDKit {rdkit.__version__} · Streamlit {st.__version__}")
 

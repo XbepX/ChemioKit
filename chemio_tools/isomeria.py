@@ -10,7 +10,8 @@ Isomeria a partir da fórmula molecular.
      c) em cada passo, estruturas repetidas são descartadas pelo SMILES canônico.
    Toda estrutura final pode ser desmontada de volta até uma árvore tirando insaturações,
    e toda árvore pode ser desmontada tirando folhas; por isso o caminho inverso encontra
-   todas. Valências fixas: C 4, N 3, O 2, S 2, halogênios 1; sem cargas (grupos como o
+   todas. O resultado é exato para qualquer tamanho; os limites (LIMITE_ATOMOS_PESADOS,
+   LIMITE_ESTRUTURAS, TEMPO_LIMITE_GERACAO) só evitam esperas longas. Valências fixas: C 4, N 3, O 2, S 2, halogênios 1; sem cargas (grupos como o
    nitro, que só existem com cargas formais, não são gerados).
 
    Todas as estruturas possíveis são mostradas, inclusive as muito tensionadas ou
@@ -29,6 +30,7 @@ Todas as funções devolvem tipos que viram JSON.
 from __future__ import annotations
 
 import re
+import time
 from concurrent.futures import TimeoutError as TempoEsgotado
 
 from rdkit import Chem, RDLogger
@@ -44,8 +46,12 @@ from .stereochemistry import (
 from .utils import validar_smiles
 
 VALENCIAS = {"C": 4, "N": 3, "O": 2, "S": 2, "F": 1, "Cl": 1, "Br": 1, "I": 1}
-LIMITE_ATOMOS_PESADOS = 8
-LIMITE_ESTRUTURAS = 6000  # interrompe a geração se um passo intermediário passar disso
+# O gerador é exato para qualquer tamanho; os limites só evitam esperas longas e falta de memória.
+# O que cresce rápido é o número de estruturas (fórmulas com muitas insaturações ou heteroátomos),
+# não o de átomos: C12H26 tem 355 isômeros (0,3 s), C8H16O2 tem 13.190 (8 s).
+LIMITE_ATOMOS_PESADOS = 20
+LIMITE_ESTRUTURAS = 60000      # estruturas guardadas num passo intermediário (memória)
+TEMPO_LIMITE_GERACAO = 20.0    # segundos
 
 _ORDEM = {1: Chem.BondType.SINGLE, 2: Chem.BondType.DOUBLE, 3: Chem.BondType.TRIPLE}
 
@@ -103,6 +109,10 @@ class _LimiteExcedido(Exception):
     pass
 
 
+class _TempoExcedido(Exception):
+    pass
+
+
 def _montar_mol(elementos: tuple, ligacoes: dict, sanitizar: bool = False) -> Chem.Mol:
     rw = Chem.RWMol()
     for e in elementos:
@@ -133,19 +143,22 @@ def _valencia_livre(elementos: tuple, ligacoes: dict) -> list[int]:
     return [VALENCIAS[e] - usada[k] for k, e in enumerate(elementos)]
 
 
-def _guardar(destino: dict, elementos: tuple, ligacoes: dict):
+def _guardar(destino: dict, elementos: tuple, ligacoes: dict, prazo: float):
     chave = Chem.MolToSmiles(_montar_mol(elementos, ligacoes))
     if chave not in destino:
         destino[chave] = (elementos, ligacoes)
         if len(destino) > LIMITE_ESTRUTURAS:
             raise _LimiteExcedido
+        if time.perf_counter() > prazo:
+            raise _TempoExcedido
 
 
-def _enumerar_constitucionais(elementos: dict[str, int], insaturacoes: int) -> set[str]:
+def _enumerar_constitucionais(elementos: dict[str, int], insaturacoes: int, tempo_limite: float = TEMPO_LIMITE_GERACAO) -> set[str]:
     """SMILES canônicos (RDKit, com aromaticidade) de todos os isômeros constitucionais."""
+    prazo = time.perf_counter() + tempo_limite
     nivel: dict = {}
     for e in elementos:
-        _guardar(nivel, (e,), {})
+        _guardar(nivel, (e,), {}, prazo)
 
     # a) árvores: um átomo novo por vez, ligado a um átomo com valência livre
     for _ in range(sum(elementos.values()) - 1):
@@ -162,7 +175,7 @@ def _enumerar_constitucionais(elementos: dict[str, int], insaturacoes: int) -> s
                     if li >= 1:
                         novas = dict(ligacoes)
                         novas[(i, len(atomos))] = 1
-                        _guardar(proximo, atomos + (e,), novas)
+                        _guardar(proximo, atomos + (e,), novas, prazo)
         nivel = proximo
 
     # b) insaturações: fecha um anel ou aumenta a ordem de uma ligação
@@ -180,11 +193,13 @@ def _enumerar_constitucionais(elementos: dict[str, int], insaturacoes: int) -> s
                     if ordem < 3:
                         novas = dict(ligacoes)
                         novas[(i, j)] = ordem + 1
-                        _guardar(proximo, atomos, novas)
+                        _guardar(proximo, atomos, novas, prazo)
         nivel = proximo
 
     finais = set()
     for atomos, ligacoes in nivel.values():
+        if time.perf_counter() > prazo:
+            raise _TempoExcedido
         try:
             finais.add(Chem.MolToSmiles(_montar_mol(atomos, ligacoes, sanitizar=True)))
         except Exception:  # estrutura que o RDKit não consegue sanitizar (rara)
@@ -343,7 +358,8 @@ def _resumo_estereo(mol: Chem.Mol) -> dict:
     }
 
 
-def gerar_isomeros(formula: str, limite_atomos: int = LIMITE_ATOMOS_PESADOS) -> dict:
+def gerar_isomeros(formula: str, limite_atomos: int = LIMITE_ATOMOS_PESADOS,
+                   tempo_limite: float = TEMPO_LIMITE_GERACAO) -> dict:
     """
     Gera os isômeros constitucionais da fórmula. Resultado:
       status: "ok" | "formula_invalida" | "muito_grande"
@@ -359,23 +375,43 @@ def gerar_isomeros(formula: str, limite_atomos: int = LIMITE_ATOMOS_PESADOS) -> 
         return {
             "status": "muito_grande",
             "formula": f["formula"],
-            "mensagem": f"{f['formula']} tem {f['atomos_pesados']} átomos além do H. O limite é {limite_atomos}: "
-            "acima disso o número de estruturas cresce demais para mostrar na tela.",
+            "mensagem": f"{f['formula']} tem {f['atomos_pesados']} átomos além do H (o limite é {limite_atomos}).",
         }
 
+    prazo = time.perf_counter() + tempo_limite
     try:
-        todos = _enumerar_constitucionais(f["elementos"], f["insaturacoes"])
-    except _LimiteExcedido:
+        todos = _enumerar_constitucionais(f["elementos"], f["insaturacoes"], tempo_limite)
+        isomeros = _descrever_isomeros(todos, prazo)
+    except (_LimiteExcedido, _TempoExcedido):
         return {
             "status": "muito_grande",
             "formula": f["formula"],
-            "mensagem": f"{f['formula']} tem mais de {LIMITE_ESTRUTURAS:,} estruturas possíveis".replace(",", ".")
-            + ". Tente uma fórmula com menos átomos ou menos insaturações.",
+            "mensagem": f"{f['formula']} tem estruturas demais para gerar em {tempo_limite:g} s. "
+            "Fórmulas com muitas insaturações ou heteroátomos têm dezenas de milhares de isômeros; "
+            "tente uma fórmula menor.",
         }
 
+    grupos: dict[str, list[int]] = {}
+    for i, iso in enumerate(isomeros):
+        grupos.setdefault(iso["grupo"], []).append(i)
+
+    return {
+        "status": "ok",
+        "formula": f["formula"],
+        "insaturacoes": f["insaturacoes"],
+        "total": len(todos),
+        "isomeros": isomeros,
+        "grupos": grupos,
+    }
+
+
+def _descrever_isomeros(todos: set[str], prazo: float) -> list[dict]:
+    """Função, cadeia, estereoquímica e nome de cada isômero (com o mesmo prazo da geração)."""
     nomes = _indice_glossario()
     isomeros = []
     for smiles in sorted(todos, key=lambda s: (len(s), s)):
+        if time.perf_counter() > prazo:
+            raise _TempoExcedido
         mol = Chem.MolFromSmiles(smiles)
         funcoes = identificar_funcoes(mol)
         cadeia = classificar_cadeia(mol)
@@ -392,19 +428,7 @@ def gerar_isomeros(formula: str, limite_atomos: int = LIMITE_ATOMOS_PESADOS) -> 
                 "chave_conectividade": chave,
             }
         )
-
-    grupos: dict[str, list[int]] = {}
-    for i, iso in enumerate(isomeros):
-        grupos.setdefault(iso["grupo"], []).append(i)
-
-    return {
-        "status": "ok",
-        "formula": f["formula"],
-        "insaturacoes": f["insaturacoes"],
-        "total": len(todos),
-        "isomeros": isomeros,
-        "grupos": grupos,
-    }
+    return isomeros
 
 
 # ------------------------------------------------------------------ API: isomeria espacial

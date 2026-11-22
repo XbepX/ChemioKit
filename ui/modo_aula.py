@@ -14,7 +14,6 @@ from chemio_tools import (
     classificar_par_isomeros,
     exportar_imagem_2d,
     gerar_estereoisomeros,
-    gerar_html_3d,
     identificar_centros_quirais,
     obter_enantiomero,
     obter_propriedades_basicas,
@@ -22,6 +21,7 @@ from chemio_tools import (
 
 from .estado import definir_modo, molecula
 from .estilo import ESCALA_ROTULOS, formula_bonita, num
+from .visor import html_3d
 
 
 def _sair():
@@ -38,9 +38,10 @@ def _mostrar(smiles: str, dim: str, largura: int, altura: int, op: dict):
     if dim == "2D":
         st.image(_imagem_2d(smiles, largura, altura, op["quirais"], op["hib"], op["hs"]), width="stretch")
     else:
-        html = gerar_html_3d(smiles, mostrar_h=op["hs"], destacar_quirais=op["quirais"], auto_spin=op["girar"], largura=largura, altura=altura)
+        html = html_3d(smiles, mostrar_h=op["hs"], destacar_quirais=op["quirais"], rotulos=True,
+                       hibridizacao=op["hib"], altura=altura, auto_spin=op["girar"])
         if html:
-            st.iframe(html, height=altura + 20)
+            st.iframe(html, height=altura + 12)
         else:
             st.warning("Não foi possível calcular a geometria 3D.", icon="⚠️")
 
@@ -73,14 +74,14 @@ def renderizar_modo_aula(smiles: str):
         op = {
             "quirais": st.toggle("Quirais", key="aula_quirais"),
             "hs": st.toggle("Hidrogênios", key="aula_hs"),
-            "hib": st.toggle("Hibridização", key="aula_hib", disabled=dim == "3D"),
+            "hib": st.toggle("Hibridização", key="aula_hib"),
             "girar": st.toggle("Girar", key="aula_girar", disabled=dim == "2D"),
         }
 
     if vista == "Estrutura":
         _mostrar(smiles, dim, 1100, 640, op)
         st.markdown(f"**{_legenda(smiles)}**")
-        if op["hib"] and dim == "2D":
+        if op["hib"]:
             h = analisar_hibridizacao_e_ligacoes(smiles)
             c = h["contagem_hibridizacao"]
             st.markdown(f"🔵 sp³: **{c['sp3']}** · 🟠 sp²: **{c['sp2']}** · 🟣 sp: **{c['sp']}** · σ: **{h['sigma']}** · π: **{h['pi']}**")

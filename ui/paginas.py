@@ -6,6 +6,7 @@ from chemio_tools import buscar_alertas_estruturais
 
 from .cartao import renderizar_cartao
 from .estado import ABAS, EXEMPLOS, definir_molecula, molecula
+from .inputs import renderizar_busca
 from .modo_atividade import _sortear_molecula, renderizar_modo_atividade
 from .modo_aula import renderizar_modo_aula
 from .tab_comparar import renderizar_aba_comparar
@@ -24,8 +25,8 @@ def _boas_vindas():
     st.markdown("Ferramenta de química para explorar moléculas em 2D e 3D, estereoquímica, propriedades e isomeria.")
     with st.container(border=True):
         st.markdown("#### Para começar")
-        st.markdown("Digite o **nome** de uma substância ou um **SMILES** na barra lateral, carregue um arquivo "
-                    "(.mol, .sdf, .pdb) ou escolha um exemplo:")
+        renderizar_busca(destaque=True)
+        st.markdown("**Ou experimente:**")
         cols = st.columns(3)
         for i, (nome, smiles) in enumerate(EXEMPLOS):
             cols[i % 3].button(nome, key=f"bv_{i}", on_click=definir_molecula, args=(smiles, nome, "exemplo"), width="stretch")
@@ -57,6 +58,7 @@ def pagina_molecula():
         renderizar_modo_atividade(smiles)
         return
 
+    renderizar_busca()
     renderizar_cartao()
     alertas = buscar_alertas_estruturais(smiles)
     nomes = ABAS[:3] + ([ROTULO_ALERTAS] if alertas["total"] else []) + ABAS[3:]

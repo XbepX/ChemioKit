@@ -2,11 +2,12 @@
 
 import streamlit as st
 
-from chemio_tools import classificar_par_isomeros, comparar_moleculas, gerar_imagem_2d, resolver_nome, validar_smiles
+from chemio_tools import classificar_par_isomeros, comparar_moleculas, resolver_nome, validar_smiles
 from rdkit import RDLogger
 
 from .estado import molecula
 from .estilo import erro, num, por_que
+from .visor import seletor_dimensao, visor
 
 
 def _resolver_entrada(texto: str) -> dict:
@@ -60,15 +61,16 @@ def renderizar_aba_comparar(smiles_input: str):
         por_que([
             "**Tanimoto** compara as impressões digitais das moléculas (fragmentos ao redor de cada átomo, "
             "Morgan de raio 2): 1 = mesmas impressões, 0 = nenhuma em comum.",
-            "**MCS** é a maior subestrutura comum: o maior pedaço que aparece igual nas duas, destacado nos desenhos.",
+            "**MCS** é a maior subestrutura comum: o maior pedaço que aparece igual nas duas, destacado em laranja.",
         ])
 
+    dim = seletor_dimensao("comparar")
     a_img, b_img = st.columns(2)
     with a_img:
-        st.image(gerar_imagem_2d(smiles_input, indices_destaque_extra=r["mcs"]["indices_a"]))
+        visor(smiles_input, dim, indices=r["mcs"]["indices_a"], altura_3d=320)
         st.caption(nome_a)
     with b_img:
-        st.image(gerar_imagem_2d(b["smiles"], indices_destaque_extra=r["mcs"]["indices_b"]))
+        visor(b["smiles"], dim, indices=r["mcs"]["indices_b"], altura_3d=320)
         st.caption(nome_b)
     if not r["mcs"]["completa"]:
         st.caption("A busca da subestrutura comum parou no tempo limite; o destaque pode ser menor que o real.")

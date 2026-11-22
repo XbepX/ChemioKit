@@ -75,10 +75,20 @@ def test_enol_continua_visivel():
     assert "C=CO" in {i["smiles"] for i in gerar_isomeros("C2H4O")["isomeros"]}
 
 
-def test_limites():
-    assert gerar_isomeros("C9H20")["status"] == "muito_grande"   # mais de 8 átomos pesados
-    assert gerar_isomeros("C7H6O")["status"] == "muito_grande"   # mais de 6.000 estruturas
+def test_limites(monkeypatch):
+    import chemio_tools.isomeria as iso
+
+    assert gerar_isomeros("C25H52")["status"] == "muito_grande"   # acima do limite de átomos (20)
     assert gerar_isomeros("abc")["status"] == "formula_invalida"
+    monkeypatch.setattr(iso, "LIMITE_ESTRUTURAS", 100)            # simula fórmula com estruturas demais
+    assert gerar_isomeros("C6H6")["status"] == "muito_grande"
+    assert gerar_isomeros("C6H6", tempo_limite=0)["status"] == "muito_grande"
+
+
+@pytest.mark.parametrize("formula, total", [("C9H20", 35), ("C10H22", 75), ("C11H24", 159), ("C12H26", 355)])
+def test_alcanos_acima_de_8_carbonos(formula, total):
+    # sequência dos alcanos (isômeros constitucionais): 35, 75, 159, 355
+    assert gerar_isomeros(formula)["total"] == total
 
 
 def test_nome_do_glossario_e_classificacao_da_cadeia():

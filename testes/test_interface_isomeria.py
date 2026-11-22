@@ -41,9 +41,14 @@ def test_formula_invalida_avisa(app):
     assert any("não corresponde" in w.value for w in app.warning)
 
 
-def test_formula_grande_avisa(app):
+def test_formula_acima_de_8_carbonos_funciona(app):
     _gerar(app, "C9H20")
-    assert any("O limite é 8" in w.value for w in app.warning)
+    assert any("35 isômeros" in s.value for s in app.success)
+
+
+def test_formula_grande_demais_avisa(app):
+    _gerar(app, "C25H52")
+    assert any("o limite é 20" in w.value for w in app.warning)
 
 
 def test_abrir_isomero_vai_para_a_pagina_molecula(app):
@@ -59,3 +64,10 @@ def test_buscar_nomes_sem_internet_nao_trava(app):
     app.run()
     assert not app.exception
     assert any("PubChem" in w.value for w in app.warning)
+
+
+def test_cartao_de_isomero_alterna_para_3d(app):
+    chave = next(s.key for s in app.segmented_control if s.key and s.key.startswith("dim_iso_C4H10O_"))
+    app.segmented_control(key=chave).set_value("3D").run()
+    assert not app.exception
+    assert len(app.get("iframe")) == 1

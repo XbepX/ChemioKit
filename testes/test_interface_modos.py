@@ -137,3 +137,40 @@ def test_outra_molecula_sorteia_do_glossario():
     at.run()
     assert not at.exception
     assert at.session_state.molecula["smiles"] != "CCO" and at.session_state.molecula["origem"] == "glossario"
+
+
+def test_verificar_sem_responder_avisa_e_nao_corrige():
+    at = _abrir(smiles="CC(O)C(=O)O", modo="atividade", atividade="quirais")
+    _verificar(at)
+    assert any("Responda antes de verificar" in w.value for w in at.warning)
+    assert not at.success and not any("Ainda não" in e.value for e in at.error)
+
+
+def test_nenhum_junto_com_carbono_avisa():
+    at = _abrir(smiles="CC(O)C(=O)O", modo="atividade", atividade="quirais")
+    next(p for p in at.pills if p.label == "Carbonos quirais").set_value(["C2", "Nenhum"])
+    _verificar(at)
+    assert any("não combinam" in w.value for w in at.warning)
+
+
+def test_hibridizacao_incompleta_lista_o_que_falta():
+    at = _abrir(smiles="C#CC", modo="atividade", atividade="hibridizacao")
+    at.segmented_control(key=next(s.key for s in at.segmented_control if s.label == "C1")).set_value("sp")
+    _verificar(at)
+    assert any("C2" in w.value and "C3" in w.value for w in at.warning)
+
+
+def test_atividade_em_3d_mostra_rotulos():
+    at = _abrir(smiles="CC(O)C(=O)O", modo="atividade", atividade="quirais")
+    chave = next(s.key for s in at.segmented_control if s.key and s.key.endswith("_dim"))
+    at.segmented_control(key=chave).set_value("3D").run()
+    html = at.get("iframe")[0].proto.srcdoc
+    assert 'addLabel("C1"' in html and 'addLabel("C2"' in html
+
+
+def test_aula_hibridizacao_no_3d():
+    at = _abrir(smiles="C#CC", modo="aula")
+    at.segmented_control(key="aula_dim").set_value("3D").run()
+    at.toggle(key="aula_hib").set_value(True).run()
+    assert not at.exception
+    assert "sp\\u00b3" in at.get("iframe")[0].proto.srcdoc

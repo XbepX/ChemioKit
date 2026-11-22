@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from chemio_tools import cache_nomes, glossario, identificar_centros_quirais, pubchem, resolver_nome, validar_smiles
+from chemio_tools import cache_nomes, glossario, identificar_centros_quirais, pubchem, resolver_entrada, resolver_nome, validar_smiles
 
 L_TARTARICO = "[C@@H]([C@H](C(=O)O)O)(C(=O)O)O"
 D_TARTARICO = "[C@H]([C@@H](C(=O)O)O)(C(=O)O)O"
@@ -168,3 +168,54 @@ def test_nenhum_teste_acessa_a_internet(consulta):
 
     with pytest.raises(urllib.error.URLError, match="rede desativada nos testes"):
         consulta()
+
+
+# ------------------------------------------------------------------ campo único: nome, SMILES ou fórmula
+
+
+@pytest.mark.parametrize(
+    "texto, status, fonte, smiles",
+    [
+        ("etanol", "encontrado", "glossario", "CCO"),
+        ("CCO", "encontrado", "smiles", "CCO"),
+        ("CH4", "encontrado", "formula", "C"),     # fórmula com um único isômero
+        ("H2O", "encontrado", "formula", "O"),
+        ("C2H6O", "ambiguo", "formula", None),     # etanol e metoximetano
+        ("vinagre", "mistura", "glossario", None),
+    ],
+)
+def test_resolver_entrada(texto, status, fonte, smiles):
+    r = resolver_entrada(texto)
+    assert (r["status"], r.get("fonte")) == (status, fonte)
+    if smiles:
+        assert r["smiles"] == smiles
+
+
+def test_formula_com_muitos_isomeros():
+    r = resolver_entrada("C6H6")
+    assert (r["status"], r["formula"], r["total"]) == ("formula", "C6H6", 217)
+
+
+def test_opcoes_de_formula_tem_nome_e_rotulo():
+    opcoes = {o["smiles"]: o for o in resolver_entrada("C2H6O")["opcoes"]}
+    assert (opcoes["CCO"]["nome"], opcoes["CCO"]["nome_molecula"]) == ("Etanol", "Etanol")
+    assert (opcoes["COC"]["nome"], opcoes["COC"]["nome_molecula"]) == ("COC (éter)", "")
+
+
+@pytest.mark.parametrize("texto", ["CC(O", "C1CC", "c1ccc"])
+def test_smiles_invalido_nao_consulta_o_pubchem(texto, monkeypatch):
+    chamadas = _pubchem_simulado(monkeypatch, {})
+    assert resolver_entrada(texto)["status"] == "smiles_invalido"
+    assert chamadas == []
+
+
+def test_texto_que_e_formula_e_smiles_avisa():
+    r = resolver_entrada("CO")
+    assert r["fonte"] == "smiles" and "fórmula molecular CO" in r["aviso"]
+    assert "aviso" not in resolver_entrada("CCO") and "aviso" not in resolver_entrada("O")
+
+
+def test_nome_desconhecido_segue_para_o_pubchem(monkeypatch):
+    _pubchem_simulado(monkeypatch, {"lidocaine": [_registro("lidocaine", "CCN(CC)CC(=O)Nc1c(C)cccc1C", 3676, "x")]})
+    r = resolver_entrada("lidocaine")
+    assert (r["status"], r["fonte"]) == ("encontrado", "pubchem")

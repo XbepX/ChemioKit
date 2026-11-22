@@ -27,9 +27,9 @@ def _caixa(at, rotulo):
 # ------------------------------------------------------------------ Estrutura
 
 
-def test_colorir_por_hibridizacao_mostra_contagens():
+def test_botao_hibridizacao_mostra_contagens():
     at = _abrir("C#CC=C")
-    _caixa(at, "Colorir carbonos por hibridização").check().run()
+    at.toggle(key="est_hib").set_value(True).run()
     assert not at.exception
     texto = " ".join(m.value for m in at.markdown)
     assert "**sp³**: 0" in texto and "**sp²**: 2" in texto and "**sp**: 2" in texto
@@ -138,3 +138,47 @@ def test_janelas_de_estrutura_tem_fundo_branco_por_padrao():
     at.segmented_control(key="modo_vis").set_value("3D").run()
     assert next(c for c in at.checkbox if c.label == "Fundo escuro").value is False
     assert 'setBackgroundColor("white")' in at.get("iframe")[0].proto.srcdoc
+
+
+def test_hibridizacao_tambem_no_3d():
+    at = _abrir("C#CC=C")
+    at.toggle(key="est_hib").set_value(True).run()
+    at.segmented_control(key="modo_vis").set_value("3D").run()
+    assert not at.exception
+    html = at.get("iframe")[0].proto.srcdoc
+    assert 'addLabel("C1 sp"' in html and 'addLabel("C3 sp\\u00b2"' in html
+    assert any("**sp³**: 0" in m.value for m in at.markdown)  # a contagem continua no 3D
+
+
+def test_grupo_funcional_destacado_no_3d():
+    at = _abrir("CCOC(C)=O")
+    at.pills(key="grupo_ativo").set_value("Éster").run()
+    at.segmented_control(key="modo_vis").set_value("3D").run()
+    assert "#ff9900" in at.get("iframe")[0].proto.srcdoc  # esferas de destaque
+
+
+@pytest.mark.parametrize("aba, chave", [
+    ("Estereoquímica", "dim_estereo_principal"),
+    ("Propriedades", "dim_murcko"),
+])
+def test_outras_janelas_alternam_para_3d(aba, chave):
+    at = _abrir("C[C@@H](O)c1ccccc1", aba=aba)
+    at.segmented_control(key=chave).set_value("3D").run()
+    assert not at.exception
+    assert len(at.get("iframe")) == 1
+
+
+def test_comparar_alterna_as_duas_estruturas_para_3d():
+    at = _abrir("CCCCO")
+    at.text_input(key="comparar_texto").input("CCC(C)O")
+    next(b for b in at.button if b.label == "Comparar").click()
+    at.run()
+    at.segmented_control(key="dim_comparar").set_value("3D").run()
+    assert len(at.get("iframe")) == 2 and all("#ff9900" in f.proto.srcdoc for f in at.get("iframe"))
+
+
+def test_alertas_alternam_para_3d():
+    at = _abrir("CC=O")
+    chave = next(s.key for s in at.segmented_control if s.key and s.key.startswith("dim_alerta_"))
+    at.segmented_control(key=chave).set_value("3D").run()
+    assert len(at.get("iframe")) == 1

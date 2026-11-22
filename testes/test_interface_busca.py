@@ -1,4 +1,4 @@
-"""Entrada da molécula na barra lateral: nome, SMILES, histórico e exemplos (AppTest)."""
+"""Busca da molécula (campo único: nome, SMILES ou fórmula), histórico e exemplos (AppTest)."""
 
 from pathlib import Path
 
@@ -22,15 +22,23 @@ def _botao(at, rotulo_contem):
 
 
 def _buscar(at, nome):
-    at.text_input(key="campo_nome").input(nome)
+    at.text_input(key="campo_busca").input(nome)
     _botao(at, "Buscar").click()
     at.run()
     assert not at.exception
 
 
-def test_app_abre_na_tela_de_boas_vindas(app):
+def test_app_abre_na_tela_de_boas_vindas_com_a_busca_no_centro(app):
     assert app.session_state.molecula is None
     assert any("Para começar" in m.value for m in app.markdown)
+    campo = app.text_input(key="campo_busca")
+    assert campo.label == "Nome, SMILES ou fórmula da molécula"
+
+
+def test_busca_fica_no_topo_com_molecula_aberta(app):
+    _buscar(app, "etanol")
+    assert app.text_input[0].key == "campo_busca"  # o primeiro campo da página é a busca
+    assert any("glossário" in t.value for t in app.toast)
 
 
 def test_exemplo_abre_a_molecula(app):
@@ -43,7 +51,7 @@ def test_exemplo_abre_a_molecula(app):
 def test_busca_por_nome_abre_a_molecula(app):
     _buscar(app, "etanol")
     assert app.session_state.molecula == {"smiles": "CCO", "nome": "Etanol", "origem": "glossario"}
-    assert any("Etanol" in s.value for s in app.success)
+    assert any("Etanol" in t.value for t in app.toast)
 
 
 def test_nome_ambiguo_mostra_opcoes_e_aplica_a_escolhida(app):
@@ -70,17 +78,37 @@ def test_sem_internet_avisa_sem_travar_e_sugestao_funciona(app):
     assert app.session_state.molecula["smiles"] == "CCO"
 
 
-def test_entrada_por_smiles_valido_e_invalido(app):
-    app.segmented_control(key="forma_entrada").set_value("SMILES").run()
-    app.text_input(key="campo_smiles").input("C1CC")
-    _botao(app, "Abrir").click()
-    app.run()
-    assert any("SMILES inválido" in e.value for e in app.error)
+def test_mesmo_campo_aceita_smiles_valido_e_invalido(app):
+    _buscar(app, "CC(O")
+    assert any("parece um SMILES, mas não é válido" in e.value for e in app.error)
     assert app.session_state.molecula is None
-    app.text_input(key="campo_smiles").input("CCN")
-    _botao(app, "Abrir").click()
-    app.run()
+    _buscar(app, "CCN")
     assert app.session_state.molecula["smiles"] == "CCN"
+
+
+def test_formula_com_um_isomero_abre_direto(app):
+    _buscar(app, "CH4")
+    assert app.session_state.molecula["smiles"] == "C"
+
+
+def test_formula_com_poucos_isomeros_mostra_opcoes(app):
+    _buscar(app, "C2H6O")
+    assert any("fórmula molecular com 2 isômeros" in i.value for i in app.info)
+    _botao(app, "COC (éter)").click()
+    app.run()
+    assert app.session_state.molecula == {"smiles": "COC", "nome": "", "origem": "formula"}
+
+
+def test_formula_com_muitos_isomeros_leva_a_isomeria(app):
+    _buscar(app, "C6H6")
+    _botao(app, "Ver os isômeros de C6H6").click()
+    app.run()
+    assert app.session_state.iso_formula == "C6H6"
+
+
+def test_co_avisa_que_foi_lido_como_smiles(app):
+    _buscar(app, "CO")
+    assert any("lido como SMILES" in i.value for i in app.info)
 
 
 def test_historico_permite_voltar(app):

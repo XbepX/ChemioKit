@@ -12,12 +12,12 @@ from chemio_tools import (
     explicar_atividade_optica,
     explicar_carbonos_quirais,
     gerar_estereoisomeros,
-    gerar_imagem_2d,
     identificar_centros_quirais,
 )
 
 from .estado import definir_molecula
-from .estilo import ESCALA_ROTULOS, TEXTO_CARREGANDO, por_que
+from .estilo import TEXTO_CARREGANDO, por_que
+from .visor import janela
 
 ICONES = {"Opticamente Ativa": "✨", "Inativa (composto meso)": "⚪", "Inativa": "⚪", "Indefinida": "❔"}
 
@@ -33,8 +33,9 @@ def renderizar_aba_estereoquimica(smiles_input: str):
 
     col_img, col_txt = st.columns([1, 1.3], gap="large")
     with col_img:
-        st.image(gerar_imagem_2d(smiles_input, destacar_quirais=True, mostrar_indices=True, escala_rotulos=ESCALA_ROTULOS))
-        st.caption("Carbonos quirais marcados com * e a configuração (R/S), quando definida.")
+        dim = janela(smiles_input, "estereo_principal", quirais=True, rotulos=True, altura_3d=380)
+        st.caption("Carbonos quirais marcados com * e a configuração (R/S), quando definida."
+                   if dim == "2D" else "Carbonos quirais envolvidos por uma malha azul. Gire o modelo com o mouse.")
     with col_txt:
         atividade = dados["atividade_optica"]
         st.markdown(f"### {ICONES.get(atividade, '')} {atividade}")
@@ -88,7 +89,7 @@ def renderizar_aba_estereoquimica(smiles_input: str):
             cols = st.columns(cols_por_linha)
             for j, smi in enumerate(isomeros[i:i + cols_por_linha]):
                 with cols[j]:
-                    st.image(gerar_imagem_2d(smi, espessura_linha=1, tamanho_fonte=10, destacar_quirais=True, escala_rotulos=ESCALA_ROTULOS))
+                    janela(smi, f"estereo_{i + j}", quirais=True, altura_3d=230)
                     st.caption(f"Isômero {i + j + 1} · {ICONES.get(atividades[smi], '')} {atividades[smi]}")
                     st.code(smi, language="text", wrap_lines=True)
                     st.button("Abrir", key=f"estereo_abrir_{i + j}", on_click=_abrir, args=(smi,), type="tertiary")

@@ -3,11 +3,11 @@ from chemio_tools import (
     analisar_isomeria_espacial,
     buscar_nomes_isomeros,
     classificar_par_isomeros,
-    gerar_imagem_2d,
     gerar_isomeros,
 )
 
 from .estado import definir_molecula
+from .visor import janela
 
 POR_PAGINA = 24
 COLUNAS = 4
@@ -16,11 +16,6 @@ COLUNAS = 4
 @st.cache_data(show_spinner=False, max_entries=20)
 def _gerar(formula: str) -> dict:
     return gerar_isomeros(formula)
-
-
-@st.cache_data(show_spinner=False, max_entries=500)
-def _imagem(smiles: str):
-    return gerar_imagem_2d(smiles, espessura_linha=2, tamanho_fonte=14)
 
 
 def _abrir_no_chemiokit(smiles: str, nome: str = ""):
@@ -47,13 +42,15 @@ def renderizar_aba_isomeria():
     """Aba Isomeria: isômeros a partir da fórmula molecular, classificação de pares e isomeria espacial."""
     st.subheader("Isômeros a partir da fórmula molecular")
     st.caption(
-        "Gera todos os isômeros constitucionais (planos) da fórmula, com C, H, N, O, S e halogênios, "
-        "até 8 átomos além do hidrogênio."
+        "Gera todos os isômeros constitucionais (planos) da fórmula, com C, H, N, O, S e halogênios. "
+        "Fórmulas com muitas insaturações ou heteroátomos podem ter milhares de isômeros e levar alguns segundos."
     )
 
     with st.form("form_isomeria", border=False):
         c_formula, c_botao, _ = st.columns([2, 1, 2], vertical_alignment="bottom")
-        formula = c_formula.text_input("Fórmula molecular:", value="C4H10O", key="iso_formula")
+        if "iso_formula" not in st.session_state:  # a busca da página Molécula pode preencher antes
+            st.session_state.iso_formula = "C4H10O"
+        formula = c_formula.text_input("Fórmula molecular:", key="iso_formula")
         c_botao.form_submit_button("Gerar")
 
     with st.spinner("Gerando as estruturas..."):
@@ -102,7 +99,7 @@ def renderizar_aba_isomeria():
         for col, i in zip(cols, visiveis[inicio: inicio + COLUNAS]):
             iso = isomeros[i]
             with col:
-                st.image(_imagem(iso["smiles"]))
+                janela(iso["smiles"], f"iso_{chave}_{i}", altura_3d=230)
                 nome = iso.get("nome") or nomes.get(iso["chave_conectividade"], {}).get("nome")
                 st.markdown(f"**{i + 1}. {nome}**" if nome else f"**{i + 1}.**")
                 st.code(iso["smiles"], language="text")
@@ -157,7 +154,7 @@ def renderizar_aba_isomeria():
         cols = st.columns(min(COLUNAS, esp["total_estereoisomeros"]))
         for k, e in enumerate(esp["estereoisomeros"]):
             with cols[k % len(cols)]:
-                st.image(_imagem(e["smiles"]))
+                janela(e["smiles"], f"iso_esp_{chave}_{escolhido}_{k}", quirais=True, altura_3d=230)
                 legenda = e["atividade_optica"]
                 if e["configuracoes_duplas"]:
                     legenda += " · dupla(s) " + ", ".join(e["configuracoes_duplas"])

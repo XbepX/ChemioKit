@@ -162,7 +162,8 @@ def test_atividade_vira_json_e_tem_dica(tipo):
 def test_atividade_invalida():
     assert gerar_atividade("quirais", "O") is None       # sem carbono
     assert gerar_atividade("xyz", "CCO") is None
-    assert gerar_atividade("isomeria", "C" * 12) is None  # grande demais para o gerador
+    assert gerar_atividade("isomeria", "C" * 25) is None  # acima do limite de átomos do gerador
+    assert gerar_atividade("isomeria", "C" * 12) is not None  # dodecano: 355 isômeros, gerados em menos de 1 s
 
 
 @pytest.mark.parametrize("tipo", list(TIPOS_ATIVIDADE))
@@ -170,3 +171,19 @@ def test_moleculas_para_praticar_servem_para_a_atividade(tipo):
     lista = moleculas_para_praticar(tipo)
     assert len(lista) >= 10
     assert all(gerar_atividade(tipo, m["smiles"], semente=0) is not None for m in lista)
+
+
+# ------------------------------------------------------------------ respostas incompletas
+
+
+def test_itens_sem_resposta():
+    from chemio_tools import itens_sem_resposta
+
+    assert itens_sem_resposta(gerar_atividade("quirais", "CC(O)C(=O)O"), None)       # nada marcado
+    assert itens_sem_resposta(gerar_atividade("quirais", "CCO"), []) == []           # marcou "Nenhum"
+    hib = gerar_atividade("hibridizacao", "C#CC")
+    assert itens_sem_resposta(hib, {"C1": "sp"}) == ["C2", "C3"]
+    assert itens_sem_resposta(gerar_atividade("sigma_pi", "CC"), {"sigma": 7, "pi": None}) == ["ligações π"]
+    cad = gerar_atividade("cadeia", "CCO")
+    assert len(itens_sem_resposta(cad, {})) == 4
+    assert itens_sem_resposta(gerar_atividade("isomeria", "CCCCO", "CCC(C)O"), None)
