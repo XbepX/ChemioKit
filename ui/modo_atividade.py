@@ -13,7 +13,7 @@ import streamlit as st
 from chemio_tools import TIPOS_ATIVIDADE, corrigir_atividade, gerar_atividade, gerar_imagem_2d, moleculas_para_praticar
 
 from .estado import definir_modo, definir_molecula, molecula
-from .estilo import ESCALA_ROTULOS, fundo_escuro_padrao
+from .estilo import ESCALA_ROTULOS
 
 ROTULO_HIB = {"sp3": "sp³", "sp2": "sp²", "sp": "sp"}
 
@@ -130,13 +130,11 @@ def renderizar_modo_atividade(smiles: str):
     with col_img:
         if a["tipo"] == "isomeria":
             ia, ib = st.columns(2)
-            escuro = fundo_escuro_padrao()
-            ia.image(gerar_imagem_2d(a["smiles"], espessura_linha=2, tamanho_fonte=14, fundo_escuro=escuro), caption="Estrutura A")
-            ib.image(gerar_imagem_2d(a["smiles_b"], espessura_linha=2, tamanho_fonte=14, fundo_escuro=escuro), caption="Estrutura B")
+            ia.image(gerar_imagem_2d(a["smiles"], espessura_linha=2, tamanho_fonte=14), caption="Estrutura A")
+            ib.image(gerar_imagem_2d(a["smiles_b"], espessura_linha=2, tamanho_fonte=14), caption="Estrutura B")
         else:
             mostrar_h = st.toggle("Mostrar hidrogênios", value=a["tipo"] == "sigma_pi", key=f"{prefixo}_hs")
-            st.image(gerar_imagem_2d(a["smiles"], mostrar_indices=True, mostrar_h=mostrar_h, espessura_linha=2, tamanho_fonte=14,
-                                     fundo_escuro=fundo_escuro_padrao(), escala_rotulos=ESCALA_ROTULOS))
+            st.image(gerar_imagem_2d(a["smiles"], mostrar_indices=True, mostrar_h=mostrar_h, espessura_linha=2, tamanho_fonte=14, escala_rotulos=ESCALA_ROTULOS))
 
     with col_resp:
         st.markdown(f"**{a['enunciado']}**")

@@ -28,9 +28,8 @@ def num(valor, casas: int = 2) -> str:
     return f"{valor:.{casas}f}".replace(".", ",")
 
 
-def fundo_escuro_padrao() -> bool:
-    """Desenhos com fundo escuro quando o app está no tema escuro."""
-    return _tema() == "dark"
+# As janelas de estrutura (2D e 3D) ficam sempre com fundo branco, também no tema escuro.
+# O fundo escuro continua disponível como opção na aba Estrutura.
 
 
 def _tema() -> str:

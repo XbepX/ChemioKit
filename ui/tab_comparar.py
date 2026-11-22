@@ -6,7 +6,7 @@ from chemio_tools import classificar_par_isomeros, comparar_moleculas, gerar_ima
 from rdkit import RDLogger
 
 from .estado import molecula
-from .estilo import erro, fundo_escuro_padrao, num, por_que
+from .estilo import erro, num, por_que
 
 
 def _resolver_entrada(texto: str) -> dict:
@@ -65,10 +65,10 @@ def renderizar_aba_comparar(smiles_input: str):
 
     a_img, b_img = st.columns(2)
     with a_img:
-        st.image(gerar_imagem_2d(smiles_input, indices_destaque_extra=r["mcs"]["indices_a"], fundo_escuro=fundo_escuro_padrao()))
+        st.image(gerar_imagem_2d(smiles_input, indices_destaque_extra=r["mcs"]["indices_a"]))
         st.caption(nome_a)
     with b_img:
-        st.image(gerar_imagem_2d(b["smiles"], indices_destaque_extra=r["mcs"]["indices_b"], fundo_escuro=fundo_escuro_padrao()))
+        st.image(gerar_imagem_2d(b["smiles"], indices_destaque_extra=r["mcs"]["indices_b"]))
         st.caption(nome_b)
     if not r["mcs"]["completa"]:
         st.caption("A busca da subestrutura comum parou no tempo limite; o destaque pode ser menor que o real.")

@@ -24,7 +24,7 @@ from chemio_tools import (
     obter_propriedades_basicas,
 )
 
-from .estilo import cabecalho, formula_bonita, fundo_escuro_padrao, num
+from .estilo import cabecalho, formula_bonita, num
 
 NOMES_CRITERIOS = {
     "massa_molecular": ("Massa molecular", "g/mol", "≤ 500"),
@@ -104,7 +104,7 @@ def renderizar_aba_propriedades(smiles_input: str):
             murcko = obter_esqueleto_murcko(smiles_input)
             if murcko["tem_anel"]:
                 st.caption("Esqueleto de Murcko (anéis e as cadeias que os ligam, sem cadeias laterais):")
-                st.image(gerar_imagem_2d(murcko["esqueleto"], espessura_linha=2, tamanho_fonte=14, fundo_escuro=fundo_escuro_padrao()), width=200)
+                st.image(gerar_imagem_2d(murcko["esqueleto"], espessura_linha=2, tamanho_fonte=14), width=200)
         else:
             st.caption("A molécula não tem anéis.")
 
@@ -138,7 +138,7 @@ def renderizar_aba_propriedades(smiles_input: str):
             cols = st.columns(3)
             for k, s in enumerate(taut["tautomeros"][:9]):
                 with cols[k % 3]:
-                    st.image(gerar_imagem_2d(s, espessura_linha=2, tamanho_fonte=14, fundo_escuro=fundo_escuro_padrao()))
+                    st.image(gerar_imagem_2d(s, espessura_linha=2, tamanho_fonte=14))
                     st.code(s, language="text", wrap_lines=True)
         else:
             st.caption("Nenhum outro tautômero encontrado.")

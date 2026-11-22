@@ -21,7 +21,7 @@ from chemio_tools import (
 )
 
 from .estado import definir_modo, molecula
-from .estilo import ESCALA_ROTULOS, formula_bonita, fundo_escuro_padrao, num
+from .estilo import ESCALA_ROTULOS, formula_bonita, num
 
 
 def _sair():
@@ -30,8 +30,7 @@ def _sair():
 
 def _imagem_2d(smiles: str, largura: int, altura: int, quirais: bool, hib: bool, hs: bool) -> bytes:
     r = exportar_imagem_2d(smiles, "png", largura=largura, altura=altura, mostrar_indices=True,
-                           destacar_quirais=quirais, colorir_hibridizacao=hib, mostrar_h=hs, espessura_linha=2, tamanho_fonte=14,
-                           fundo_escuro=fundo_escuro_padrao(), escala_rotulos=ESCALA_ROTULOS)
+                           destacar_quirais=quirais, colorir_hibridizacao=hib, mostrar_h=hs, espessura_linha=2, tamanho_fonte=14, escala_rotulos=ESCALA_ROTULOS)
     return base64.b64decode(r["conteudo"])
 
 
@@ -39,8 +38,7 @@ def _mostrar(smiles: str, dim: str, largura: int, altura: int, op: dict):
     if dim == "2D":
         st.image(_imagem_2d(smiles, largura, altura, op["quirais"], op["hib"], op["hs"]), width="stretch")
     else:
-        html = gerar_html_3d(smiles, mostrar_h=op["hs"], destacar_quirais=op["quirais"], auto_spin=op["girar"],
-                             fundo_escuro=fundo_escuro_padrao(), largura=largura, altura=altura)
+        html = gerar_html_3d(smiles, mostrar_h=op["hs"], destacar_quirais=op["quirais"], auto_spin=op["girar"], largura=largura, altura=altura)
         if html:
             st.iframe(html, height=altura + 20)
         else:

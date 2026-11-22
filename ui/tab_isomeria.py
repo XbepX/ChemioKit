@@ -8,7 +8,6 @@ from chemio_tools import (
 )
 
 from .estado import definir_molecula
-from .estilo import fundo_escuro_padrao
 
 POR_PAGINA = 24
 COLUNAS = 4
@@ -20,12 +19,8 @@ def _gerar(formula: str) -> dict:
 
 
 @st.cache_data(show_spinner=False, max_entries=500)
-def _imagem_cache(smiles: str, escuro: bool):
-    return gerar_imagem_2d(smiles, espessura_linha=2, tamanho_fonte=14, fundo_escuro=escuro)
-
-
 def _imagem(smiles: str):
-    return _imagem_cache(smiles, fundo_escuro_padrao())
+    return gerar_imagem_2d(smiles, espessura_linha=2, tamanho_fonte=14)
 
 
 def _abrir_no_chemiokit(smiles: str, nome: str = ""):

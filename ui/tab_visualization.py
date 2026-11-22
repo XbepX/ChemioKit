@@ -15,7 +15,7 @@ from chemio_tools import (
     identificar_grupos_funcionais,
 )
 
-from .estilo import ESCALA_ROTULOS, TEXTO_CARREGANDO, aviso, fundo_escuro_padrao, por_que
+from .estilo import ESCALA_ROTULOS, TEXTO_CARREGANDO, aviso, por_que
 
 ESTILOS_3D = ["Ball & Stick", "Wireframe / Line", "Stick (Bastonetes)", "CPK / Esferas"]
 SUPERFICIES = ["Nenhuma", "Van der Waals (VDW)", "Superfície Acessível ao Solvente (SAS)"]
@@ -71,7 +71,7 @@ def renderizar_aba_visualizacao(smiles_input: str):
             with st.expander("Estilo e traço"):
                 opt_espessura = st.slider("Espessura da linha", 1, 5, 2, key="o2_espessura")
                 opt_fonte = st.slider("Tamanho do texto", 8, 20, 12, key="o2_fonte")
-                opt_fundo_escuro_2d = st.checkbox("Fundo escuro", value=fundo_escuro_padrao(), key="o2_fundo")
+                opt_fundo_escuro_2d = st.checkbox("Fundo escuro", key="o2_fundo")
 
             st.session_state.opcoes_2d = dict(
                 mostrar_h=opt_mostrar_h, destacar_quirais=opt_destacar_q, mostrar_indices=opt_mostrar_idx,
@@ -96,7 +96,7 @@ def renderizar_aba_visualizacao(smiles_input: str):
                                           disabled=opt_superficie == "Nenhuma")
             with st.expander("Efeitos"):
                 opt_auto_spin = st.checkbox("Giro automático", key="o3_spin")
-                opt_fundo_escuro = st.checkbox("Fundo escuro", value=fundo_escuro_padrao(), key="o3_fundo")
+                opt_fundo_escuro = st.checkbox("Fundo escuro", key="o3_fundo")
 
     with col_render:
         if modo_vis == "2D":

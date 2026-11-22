@@ -129,3 +129,12 @@ def test_aba_exportar_tem_identificadores_e_downloads():
     rotulos = [b.proto.label for b in at.get("download_button")]
     for r in ["⬇️ Imagem PNG (.png)", "⬇️ Imagem SVG (.svg)", "⬇️ Arquivo SDF (.sdf)", "⬇️ Arquivo PDB (.pdb)"]:
         assert r in rotulos
+
+
+def test_janelas_de_estrutura_tem_fundo_branco_por_padrao():
+    at = _abrir("CCO")
+    assert at.session_state.opcoes_2d["fundo_escuro"] is False
+    assert next(c for c in at.checkbox if c.label == "Fundo escuro").value is False
+    at.segmented_control(key="modo_vis").set_value("3D").run()
+    assert next(c for c in at.checkbox if c.label == "Fundo escuro").value is False
+    assert 'setBackgroundColor("white")' in at.get("iframe")[0].proto.srcdoc
