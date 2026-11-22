@@ -7,7 +7,8 @@ from chemio_tools import (
     identificar_centros_quirais,
     gerar_estereoisomeros,
     contar_elementos_estereogenicos,
-    LIMITE_ESTEREOISOMEROS
+    LIMITE_ESTEREOISOMEROS,
+    analisar_hibridizacao_e_ligacoes
 )
 
 
@@ -39,6 +40,7 @@ def renderizar_aba_visualizacao(smiles_input: str):
                 opt_destacar_q = st.checkbox("Destacar quirais (* e R/S)", value=False)
                 opt_mostrar_idx = st.checkbox("Índices dos carbonos (C1, C2...)", value=True)
                 opt_metilas = st.checkbox("Exibir metilas (-CH₃)", value=False)
+                opt_hibridizacao = st.checkbox("Colorir carbonos por hibridização", value=False)
 
             with st.expander("🧪 Grupos Funcionais Mapeados", expanded=True):
                 if grupos_funcionais:
@@ -112,10 +114,20 @@ def renderizar_aba_visualizacao(smiles_input: str):
                 espessura_linha=opt_espessura,
                 tamanho_fonte=opt_fonte,
                 fundo_escuro=opt_fundo_escuro_2d,
-                indices_destaque_extra=indices_grupo_selecionado
+                indices_destaque_extra=indices_grupo_selecionado,
+                colorir_hibridizacao=opt_hibridizacao
             )
             if img_2d:
                 st.image(img_2d, caption="Estrutura 2D Interativa")
+            if opt_hibridizacao:
+                dados_hib = analisar_hibridizacao_e_ligacoes(smiles_input)
+                if dados_hib:
+                    c = dados_hib["contagem_hibridizacao"]
+                    st.markdown(
+                        f"🔵 **sp³**: {c['sp3']} &nbsp;&nbsp; 🟠 **sp²**: {c['sp2']} &nbsp;&nbsp; 🟣 **sp**: {c['sp']}"
+                        f" &nbsp;&nbsp;|&nbsp;&nbsp; ligações **σ**: {dados_hib['sigma']} &nbsp;&nbsp; **π**: {dados_hib['pi']}"
+                    )
+                    st.caption("Contagem com os hidrogênios incluídos e os anéis aromáticos em ligações simples e duplas alternadas.")
         else:
             html_3d = gerar_html_3d(
                 smiles_input,

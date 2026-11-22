@@ -1,5 +1,7 @@
+import base64
+
 import streamlit as st
-from chemio_tools import exportar_bloco_3d
+from chemio_tools import exportar_bloco_3d, exportar_imagem_2d
 
 
 def renderizar_aba_exportacao(smiles_input: str):
@@ -27,4 +29,30 @@ def renderizar_aba_exportacao(smiles_input: str):
                 data=pdb_data,
                 file_name="molecula_3d.pdb",
                 mime="chemical/x-pdb"
+            )
+
+    st.divider()
+    st.subheader("🖼️ Download do Desenho 2D")
+    st.caption("Imagem em alta resolução (1200 × 1000 px) para slides, provas e documentos. O SVG pode ser ampliado sem perder qualidade.")
+
+    c_png, c_svg, _ = st.columns([1.2, 1.2, 2])
+
+    with c_png:
+        png = exportar_imagem_2d(smiles_input, formato="png")
+        if png:
+            st.download_button(
+                label="⬇️ Baixar Imagem PNG (.png)",
+                data=base64.b64decode(png["conteudo"]),
+                file_name="molecula_2d.png",
+                mime=png["mime"]
+            )
+
+    with c_svg:
+        svg = exportar_imagem_2d(smiles_input, formato="svg")
+        if svg:
+            st.download_button(
+                label="⬇️ Baixar Imagem SVG (.svg)",
+                data=svg["conteudo"],
+                file_name="molecula_2d.svg",
+                mime=svg["mime"]
             )
