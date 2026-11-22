@@ -17,6 +17,15 @@ from .isomeria import (
     classificar_par_isomeros,
     buscar_nomes_isomeros,
 )
+from .explicacoes import (
+    explicar_carbonos_quirais,
+    explicar_atividade_optica,
+    explicar_hibridizacao,
+    explicar_ligacoes_sigma_pi,
+    explicar_cadeia,
+    obter_enantiomero,
+)
+from .atividades import TIPOS_ATIVIDADE, gerar_atividade, corrigir_atividade, moleculas_para_praticar
 
 __all__ = [
     "validar_smiles",
@@ -48,4 +57,14 @@ __all__ = [
     "analisar_isomeria_espacial",
     "classificar_par_isomeros",
     "buscar_nomes_isomeros",
+    "explicar_carbonos_quirais",
+    "explicar_atividade_optica",
+    "explicar_hibridizacao",
+    "explicar_ligacoes_sigma_pi",
+    "explicar_cadeia",
+    "obter_enantiomero",
+    "TIPOS_ATIVIDADE",
+    "gerar_atividade",
+    "corrigir_atividade",
+    "moleculas_para_praticar",
 ]

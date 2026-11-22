@@ -41,6 +41,7 @@ def _preparar_desenho_2d(
     fundo_escuro: bool = False,
     indices_destaque_extra: list[int] = None,
     colorir_hibridizacao: bool = False,
+    escala_rotulos: float | None = None,
 ):
     """
     Monta a molécula, os destaques e as opções de desenho usadas tanto na imagem da tela
@@ -107,6 +108,9 @@ def _preparar_desenho_2d(
     opts.minFontSize = tamanho_fonte
     opts.maxFontSize = tamanho_fonte + 6
     opts.explicitMethyl = mostrar_metilas
+    if escala_rotulos is not None:
+        # Tamanho dos rótulos (C1, C2..., R/S, sp³) em relação ao dos átomos; o padrão do RDKit é 0,5
+        opts.annotationFontScale = escala_rotulos
 
     if fundo_escuro:
         # Correção: o nome do método no RDKit é setBackgroundColour (com "u"); a versão
@@ -129,11 +133,12 @@ def gerar_imagem_2d(
     fundo_escuro: bool = False,
     indices_destaque_extra: list[int] = None,
     colorir_hibridizacao: bool = False,
+    escala_rotulos: float | None = None,
 ):
     """Gera a imagem 2D customizada alinhada às opções e destaque de centros quirais."""
     preparo = _preparar_desenho_2d(
         smiles, mostrar_h, destacar_quirais, mostrar_indices, mostrar_metilas,
-        espessura_linha, tamanho_fonte, fundo_escuro, indices_destaque_extra, colorir_hibridizacao,
+        espessura_linha, tamanho_fonte, fundo_escuro, indices_destaque_extra, colorir_hibridizacao, escala_rotulos,
     )
     if preparo is None:
         return None
@@ -171,6 +176,7 @@ def exportar_imagem_2d(
     fundo_escuro: bool = False,
     indices_destaque_extra: list[int] = None,
     colorir_hibridizacao: bool = False,
+    escala_rotulos: float | None = None,
 ) -> dict | None:
     """
     Exporta o desenho 2D em alta resolução, com as mesmas opções da tela.
@@ -183,7 +189,7 @@ def exportar_imagem_2d(
         return None
     preparo = _preparar_desenho_2d(
         smiles, mostrar_h, destacar_quirais, mostrar_indices, mostrar_metilas,
-        espessura_linha, tamanho_fonte, fundo_escuro, indices_destaque_extra, colorir_hibridizacao,
+        espessura_linha, tamanho_fonte, fundo_escuro, indices_destaque_extra, colorir_hibridizacao, escala_rotulos,
     )
     if preparo is None:
         return None
@@ -230,7 +236,9 @@ def gerar_html_3d(
     auto_spin: bool = False,
     destacar_quirais: bool = False,
     espessura_3d: int = 4,
-    raio_malha_quiral: float = 1.2
+    raio_malha_quiral: float = 1.2,
+    largura: int = 520,
+    altura: int = 420
 ) -> str | None:
     """
     Gera a visualização 3D interativa sincronizando os centros quirais com o modelo final.
@@ -263,7 +271,7 @@ def gerar_html_3d(
 
     mol_block = Chem.MolToMolBlock(mol_3d)
 
-    view = py3Dmol.view(width=520, height=420)
+    view = py3Dmol.view(width=largura, height=altura)
     view.addModel(mol_block, "sdf")
 
     usar_mep = (

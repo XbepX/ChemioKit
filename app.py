@@ -1,54 +1,50 @@
+"""
+ChemioKit: ponto de entrada da interface (Streamlit).
+
+Duas páginas (Molécula e Isomeria) e três modos de uso na página Molécula:
+  Explorar  análise completa, com explicações ("Por quê?") e detalhes técnicos opcionais;
+  Aula      para projetar: sem barra lateral, letra grande, comparação lado a lado;
+  Atividade o estudante responde e o ChemioKit confere e explica.
+Links com ?smiles=...&modo=...&aba=...&atividade=... abrem o app já na situação preparada.
+"""
+
+import rdkit
 import streamlit as st
-from chemio_tools import validar_smiles
-from ui import (
-    renderizar_secao_entradas,
-    renderizar_aba_visualizacao,
-    renderizar_aba_propriedades,
-    renderizar_aba_exportacao,
-    renderizar_aba_isomeria
-)
 
-# Configuração da página
-st.set_page_config(page_title="ChemioKit", layout="wide")
-st.title("🧪 ChemioKit - Laboratório de Testes")
+from ui import estado, pagina_isomeria, pagina_molecula, renderizar_secao_entradas
+from ui.estilo import aplicar_css
 
-# 1. Seção Superior (Entrada de SMILES, Histórico e Upload)
-smiles_input = renderizar_secao_entradas()
+st.set_page_config(page_title="ChemioKit", page_icon="🧪", layout="wide")
 
-if not smiles_input.strip():
-    st.stop()
+estado.inicializar()
+estado.ler_link()
+modo = st.session_state.modo
 
-if not validar_smiles(smiles_input):
-    st.error("SMILES inválido! Verifique a sintaxe química digitada.")
-    st.stop()
+pag_molecula = st.Page(pagina_molecula, title="Molécula", icon="🧪", url_path="molecula", default=True)
+pag_isomeria = st.Page(pagina_isomeria, title="Isomeria", icon="🔀", url_path="isomeria")
+pagina = st.navigation([pag_molecula, pag_isomeria], position="hidden" if modo == "aula" else "sidebar")
 
-st.success("SMILES válido! A estrutura foi reconhecida pelo RDKit.")
-st.write(f"SMILES capturado: `{smiles_input}`")
+if st.session_state.pop("ir_para_molecula", False) and pagina.title != pag_molecula.title:
+    st.switch_page(pag_molecula)
 
-# Reset de estados ao alterar o SMILES
-if "ultimo_smiles" not in st.session_state or st.session_state.ultimo_smiles != smiles_input:
-    st.session_state.ultimo_smiles = smiles_input
-    st.session_state.exibir_estereo = False
-    st.session_state.exibir_isomeros = False
-    st.session_state.grupo_ativo = "Nenhum"
+aplicar_css(modo)
 
-# 2. Estrutura de Abas
-tab_vis, tab_props, tab_export, tab_iso = st.tabs([
-    "👁️ Visualização & Análise Interativa",
-    "📊 Propriedades & Composição",
-    "💾 Exportar Estrutura",
-    "🔀 Isomeria"
-])
+if modo != "aula":
+    with st.sidebar:
+        if pagina.title == pag_molecula.title:
+            # Os valores ficam em "modo" e "tecnico"; os widgets usam chaves próprias porque o Streamlit
+            # apaga o valor de um widget que não é desenhado (a barra lateral some no Modo Aula).
+            estado.espelhar_widget("w_modo", "modo")
+            st.radio("Modo de uso", list(estado.MODOS), format_func=estado.MODOS.get, key="w_modo",
+                     captions=["análise completa, com explicações", "para projetar em sala", "o estudante responde e confere"],
+                     on_change=estado.copiar_widget, args=("w_modo", "modo"))
+            if st.session_state.modo == "explorar":
+                estado.espelhar_widget("w_tecnico", "tecnico")
+                st.toggle("Detalhes técnicos", key="w_tecnico", on_change=estado.copiar_widget, args=("w_tecnico", "tecnico"),
+                          help="Tabela completa, métodos, versões e exportação de dados.")
+            st.divider()
+            renderizar_secao_entradas()
+        st.divider()
+        st.caption(f"ChemioKit · RDKit {rdkit.__version__} · Streamlit {st.__version__}")
 
-# 3. Chamada dos Módulos da Pasta UI
-with tab_vis:
-    renderizar_aba_visualizacao(smiles_input)
-
-with tab_props:
-    renderizar_aba_propriedades(smiles_input)
-
-with tab_export:
-    renderizar_aba_exportacao(smiles_input)
-
-with tab_iso:
-    renderizar_aba_isomeria()
+pagina.run()

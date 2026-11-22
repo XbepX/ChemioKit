@@ -1,0 +1,32 @@
+# Configuração do Streamlit para o ChemioKit
+
+[browser]
+# Não envia estatísticas de uso do Streamlit (o app é usado por estudantes)
+gatherUsageStats = false
+
+[server]
+# Tamanho máximo de arquivo enviado (MB): arquivos .mol/.sdf/.pdb são pequenos
+maxUploadSize = 5
+
+# Tema próprio, com versão clara e escura (o usuário escolhe em Configurações).
+# Contrastes (WCAG): texto/fundo 14,6:1 (claro) e 14,5:1 (escuro); texto branco sobre
+# a cor primária 5,4:1; links 5,4:1 (claro) e 12,3:1 (escuro). Mínimo exigido: 4,5:1.
+[theme]
+baseRadius = "0.5rem"
+showSidebarBorder = true
+
+[theme.light]
+primaryColor = "#0E7490"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F1F5F9"
+textColor = "#1E293B"
+linkColor = "#0E7490"
+borderColor = "#CBD5E1"
+
+[theme.dark]
+primaryColor = "#0E7490"
+backgroundColor = "#0F172A"
+secondaryBackgroundColor = "#1E293B"
+textColor = "#E2E8F0"
+linkColor = "#67E8F9"
+borderColor = "#334155"

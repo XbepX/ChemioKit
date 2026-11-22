@@ -1,16 +1,19 @@
-"""Aba Isomeria (AppTest)."""
-
-from pathlib import Path
+"""Página Isomeria (AppTest). A página é testada chamando a função dela diretamente."""
 
 import pytest
 from streamlit.testing.v1 import AppTest
 
-APP = str(Path(__file__).resolve().parent.parent / "app.py")
+
+def _pagina():
+    from ui import estado, pagina_isomeria
+
+    estado.inicializar()
+    pagina_isomeria()
 
 
 @pytest.fixture
 def app():
-    at = AppTest.from_file(APP, default_timeout=120)
+    at = AppTest.from_function(_pagina, default_timeout=120)
     at.run()
     assert not at.exception
     return at
@@ -23,7 +26,7 @@ def _gerar(at, formula):
     assert not at.exception
 
 
-def test_aba_isomeria_abre_com_c4h10o(app):
+def test_pagina_abre_com_c4h10o(app):
     assert any("C4H10O" in s.value and "7 isômeros" in s.value for s in app.success)
     assert any("álcool (4)" in m.value and "éter (3)" in m.value for m in app.markdown)
 
@@ -43,11 +46,12 @@ def test_formula_grande_avisa(app):
     assert any("O limite é 8" in w.value for w in app.warning)
 
 
-def test_abrir_isomero_no_chemiokit(app):
+def test_abrir_isomero_vai_para_a_pagina_molecula(app):
     next(b for b in app.button if b.label == "Abrir no ChemioKit").click()
     app.run()
     assert not app.exception
-    assert app.text_input(key="campo_smiles").value == "CCCCO"
+    assert app.session_state.molecula["smiles"] == "CCCCO"
+    assert app.session_state.ir_para_molecula is True  # o app.py troca de página com esse sinal
 
 
 def test_buscar_nomes_sem_internet_nao_trava(app):

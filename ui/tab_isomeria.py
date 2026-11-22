@@ -7,6 +7,9 @@ from chemio_tools import (
     gerar_isomeros,
 )
 
+from .estado import definir_molecula
+from .estilo import fundo_escuro_padrao
+
 POR_PAGINA = 24
 COLUNAS = 4
 
@@ -17,13 +20,18 @@ def _gerar(formula: str) -> dict:
 
 
 @st.cache_data(show_spinner=False, max_entries=500)
+def _imagem_cache(smiles: str, escuro: bool):
+    return gerar_imagem_2d(smiles, espessura_linha=2, tamanho_fonte=14, fundo_escuro=escuro)
+
+
 def _imagem(smiles: str):
-    return gerar_imagem_2d(smiles, espessura_linha=2, tamanho_fonte=14)
+    return _imagem_cache(smiles, fundo_escuro_padrao())
 
 
-def _abrir_no_chemiokit(smiles: str):
-    st.session_state.campo_smiles = smiles
-    st.session_state.nome_molecula = ""
+def _abrir_no_chemiokit(smiles: str, nome: str = ""):
+    """Abre o isômero na página Molécula (a troca de página é feita pelo app.py)."""
+    definir_molecula(smiles, nome or "", origem="isomeria")
+    st.session_state.ir_para_molecula = True
 
 
 def _rotulo(iso: dict, nomes: dict) -> str:
@@ -42,7 +50,7 @@ def _selos_estereo(e: dict) -> str:
 
 def renderizar_aba_isomeria():
     """Aba Isomeria: isômeros a partir da fórmula molecular, classificação de pares e isomeria espacial."""
-    st.subheader("🔀 Isômeros a partir da fórmula molecular")
+    st.subheader("Isômeros a partir da fórmula molecular")
     st.caption(
         "Gera todos os isômeros constitucionais (planos) da fórmula, com C, H, N, O, S e halogênios, "
         "até 8 átomos além do hidrogênio."
@@ -105,7 +113,8 @@ def renderizar_aba_isomeria():
                 st.code(iso["smiles"], language="text")
                 st.caption(f"{iso['grupo']} · cadeia {iso['descricao_cadeia']}")
                 st.caption(f"Isomeria espacial: {_selos_estereo(iso['estereo'])}")
-                st.button("Abrir no ChemioKit", key=f"iso_abrir_{chave}_{i}", on_click=_abrir_no_chemiokit, args=(iso["smiles"],))
+                st.button("Abrir no ChemioKit", key=f"iso_abrir_{chave}_{i}", on_click=_abrir_no_chemiokit,
+                          args=(iso["smiles"], nome or ""))
 
     st.divider()
 
